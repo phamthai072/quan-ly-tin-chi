@@ -57,6 +57,7 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
         ? prev.filter(id => id !== subjectId) 
         : [...prev, subjectId]
     );
+    setOpenPrerequisites(false)
   }
 
   const toggleLecturer = (lecturerId: string) => {
@@ -65,6 +66,7 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
         ? prev.filter(id => id !== lecturerId) 
         : [...prev, lecturerId]
     );
+     setOpenLecturers(false)
   }
 
   return (
