@@ -96,15 +96,16 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
         </Dialog>
       </div>
 
-       <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-            type="search"
-            placeholder="Tìm kiếm sinh viên..."
-            className="w-full appearance-none bg-background pl-8 shadow-none md:w-1/2 lg:w-1/3"
-            />
-        </div>
+       <div className="flex items-center gap-2">
+          <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+              type="search"
+              placeholder="Tìm kiếm sinh viên..."
+              className="w-full appearance-none bg-background pl-8 shadow-none md:w-[280px]"
+              />
+          </div>
+          <Button>Tìm kiếm</Button>
       </div>
 
       <Card>
