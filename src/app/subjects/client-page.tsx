@@ -57,7 +57,6 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
         ? prev.filter(id => id !== subjectId) 
         : [...prev, subjectId]
     );
-    setOpenPrerequisites(false)
   }
 
   const toggleLecturer = (lecturerId: string) => {
@@ -66,7 +65,6 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
         ? prev.filter(id => id !== lecturerId) 
         : [...prev, lecturerId]
     );
-     setOpenLecturers(false)
   }
 
   return (
@@ -142,8 +140,9 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                                         <CommandItem
                                             key={subject.id}
                                             value={subject.id}
-                                            onSelect={() => {
-                                                togglePrerequisite(subject.id);
+                                            onSelect={(currentValue) => {
+                                                const id = allSubjects.find(s => s.name.toLowerCase() === currentValue)?.id || subject.id;
+                                                togglePrerequisite(id);
                                             }}
                                         >
                                             <div className={cn(
@@ -194,8 +193,9 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                                         <CommandItem
                                             key={lecturer.id}
                                             value={lecturer.id}
-                                            onSelect={() => {
-                                                toggleLecturer(lecturer.id);
+                                            onSelect={(currentValue) => {
+                                                const id = lecturers.find(l => l.name.toLowerCase() === currentValue)?.id || lecturer.id;
+                                                toggleLecturer(id);
                                             }}
                                         >
                                             <div className={cn(
