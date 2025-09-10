@@ -14,7 +14,7 @@ export function AppSidebar() {
            <BookOpenCheck className="w-8 h-8 text-primary" />
           <div className="group-data-[collapsible=icon]:hidden">
             <h2 className="font-semibold text-lg tracking-tight text-primary">
-              CreditFlow
+              Tín Chỉ
             </h2>
             <p className="text-xs text-muted-foreground">
               Hệ thống quản lý tín chỉ

@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AppLayout } from '@/components/layout/app-layout';
 
 export const metadata: Metadata = {
-  title: 'CreditFlow',
+  title: 'Tín Chỉ',
   description: 'Hệ thống quản lý tín chỉ',
 };
 

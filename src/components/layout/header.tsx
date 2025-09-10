@@ -7,7 +7,7 @@ export function Header() {
       <div className="flex items-center gap-4">
         <SidebarTrigger className="md:hidden" />
         <h1 className="text-xl font-semibold tracking-tight text-primary">
-          CreditFlow
+          Tín Chỉ
         </h1>
       </div>
       <UserNav />
