@@ -20,6 +20,32 @@ export type Faculty = {
   name: string;
 };
 
+export type Major = {
+  id: string;
+  name: string;
+  facultyId: string;
+}
+
+export type Cohort = {
+    id: string;
+    name: string;
+    startYear: number;
+}
+
+export type Classroom = {
+    id: string;
+    name: string;
+    capacity: number;
+}
+
+export type Semester = {
+    id: string;
+    name: string;
+    schoolYear: string;
+    startDate: Date;
+    endDate: Date;
+}
+
 
 export const mockStudents: Student[] = [
   { id: 'B20DCCN001', name: 'Nguyễn Văn An', class: 'D20CNPM1', major: 'Công nghệ phần mềm', program: 'Đại trà', gpa: 3.8, failedCourses: 0 },
@@ -50,6 +76,34 @@ export const mockFaculties: Faculty[] = [
     { id: 'DT', name: 'Điện tử' },
     { id: 'KT', name: 'Kinh tế' },
 ];
+
+export const mockMajors: Major[] = [
+    { id: 'CNPM', name: 'Công nghệ phần mềm', facultyId: 'CNTT' },
+    { id: 'HTTT', name: 'Hệ thống thông tin', facultyId: 'CNTT' },
+    { id: 'KHMT', name: 'Khoa học máy tính', facultyId: 'CNTT' },
+    { id: 'ATTT', name: 'An toàn thông tin', facultyId: 'ATTT' },
+    { id: 'DTVT', name: 'Điện tử viễn thông', facultyId: 'VT' },
+];
+
+export const mockCohorts: Cohort[] = [
+    { id: 'D18', name: 'Khóa 2018', startYear: 2018 },
+    { id: 'D19', name: 'Khóa 2019', startYear: 2019 },
+    { id: 'D20', name: 'Khóa 2020', startYear: 2020 },
+    { id: 'D21', name: 'Khóa 2021', startYear: 2021 },
+];
+
+export const mockClassrooms: Classroom[] = [
+    { id: 'P301A2', name: 'Phòng 301-A2', capacity: 100 },
+    { id: 'P302A2', name: 'Phòng 302-A2', capacity: 80 },
+    { id: 'P303A2', name: 'Phòng 303-A2', capacity: 120 },
+    { id: 'LAB1A3', name: 'Phòng Lab 1-A3', capacity: 50 },
+];
+
+export const mockSemesters: Semester[] = [
+    { id: 'HK1-2324', name: 'Học kỳ 1', schoolYear: '2023-2024', startDate: new Date('2023-09-05'), endDate: new Date('2024-01-15') },
+    { id: 'HK2-2324', name: 'Học kỳ 2', schoolYear: '2023-2024', startDate: new Date('2024-02-01'), endDate: new Date('2024-06-15') },
+    { id: 'HK1-2425', name: 'Học kỳ 1', schoolYear: '2024-2025', startDate: new Date('2024-09-05'), endDate: new Date('2025-01-15') },
+]
 
 export const mockGpaDistribution = [
     { range: '0 - 1.0', count: 50 },
