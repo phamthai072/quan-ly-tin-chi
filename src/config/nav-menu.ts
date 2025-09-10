@@ -26,6 +26,10 @@ export type NavMenuItem = {
 
 const adminNavMenuItems: NavMenuItem[] = [
   {
+    title: 'Hệ thống',
+    isHeader: true,
+  },
+  {
     title: 'Tổng quan',
     href: '/dashboard',
     icon: LayoutDashboard,
