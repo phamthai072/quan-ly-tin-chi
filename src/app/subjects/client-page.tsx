@@ -18,18 +18,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Check, MoreHorizontal, PlusCircle, X } from 'lucide-react';
+import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { type Subject, type Faculty, type Lecturer } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import Select from 'react-select';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 
 
 export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers }: { subjects: Subject[], faculties: Faculty[], allSubjects: Subject[], lecturers: Lecturer[] }) {
@@ -46,26 +43,8 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
     return lecturers.find(l => l.id === lecturerId)?.name || lecturerId;
   }
 
-  const [selectedPrerequisites, setSelectedPrerequisites] = React.useState<string[]>([]);
-  const [openPrerequisites, setOpenPrerequisites] = React.useState(false);
-  const [selectedLecturers, setSelectedLecturers] = React.useState<string[]>([]);
-  const [openLecturers, setOpenLecturers] = React.useState(false);
-
-  const togglePrerequisite = (subjectId: string) => {
-    setSelectedPrerequisites(prev => 
-      prev.includes(subjectId) 
-        ? prev.filter(id => id !== subjectId) 
-        : [...prev, subjectId]
-    );
-  }
-
-  const toggleLecturer = (lecturerId: string) => {
-    setSelectedLecturers(prev => 
-      prev.includes(lecturerId) 
-        ? prev.filter(id => id !== lecturerId) 
-        : [...prev, lecturerId]
-    );
-  }
+  const subjectOptions = allSubjects.map(s => ({ value: s.id, label: `${s.name} (${s.id})` }));
+  const lecturerOptions = lecturers.map(l => ({ value: l.id, label: `${l.name} (${l.id})` }));
 
   return (
     <div className="space-y-8">
@@ -99,132 +78,37 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject-faculty" className="text-right">Khoa</Label>
-                 <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Chọn khoa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {faculties.map(faculty => <SelectItem key={faculty.id} value={faculty.id}>{faculty.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                 <Select
+                    options={faculties.map(f => ({ value: f.id, label: f.name }))}
+                    className="col-span-3"
+                    placeholder="Chọn khoa"
+                 />
               </div>
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject-type" className="text-right">Loại môn</Label>
-                 <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Chọn loại môn" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cơ bản">Cơ bản</SelectItem>
-                    <SelectItem value="chuyên ngành">Chuyên ngành</SelectItem>
-                  </SelectContent>
-                </Select>
+                 <Select
+                    options={[{value: 'cơ bản', label: 'Cơ bản'}, {value: 'chuyên ngành', label: 'Chuyên ngành'}]}
+                    className="col-span-3"
+                    placeholder="Chọn loại môn"
+                 />
               </div>
                <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="subject-prerequisites" className="text-right pt-2">Môn tiên quyết</Label>
-                <div className="col-span-3">
-                    <Popover open={openPrerequisites} onOpenChange={setOpenPrerequisites}>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start font-normal">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                <span>Chọn môn tiên quyết</span>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[350px] p-0" align="start">
-                             <Command>
-                                <CommandInput placeholder="Tìm môn học..." />
-                                <CommandList>
-                                    <CommandEmpty>Không tìm thấy môn học.</CommandEmpty>
-                                    <CommandGroup>
-                                    {allSubjects.map((subject) => (
-                                        <CommandItem
-                                            key={subject.id}
-                                            value={subject.id}
-                                            onSelect={(currentValue) => {
-                                                const id = allSubjects.find(s => s.name.toLowerCase() === currentValue)?.id || subject.id;
-                                                togglePrerequisite(id);
-                                            }}
-                                        >
-                                            <div className={cn(
-                                                "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                                                selectedPrerequisites.includes(subject.id)
-                                                ? "bg-primary text-primary-foreground"
-                                                : "opacity-50 [&_svg]:invisible"
-                                            )}>
-                                                 <Check className="h-4 w-4" />
-                                            </div>
-                                            <span>{subject.name} ({subject.id})</span>
-                                        </CommandItem>
-                                    ))}
-                                    </CommandGroup>
-                                </CommandList>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                        {selectedPrerequisites.map(id => (
-                            <Badge key={id} variant="secondary">
-                                {getSubjectName(id)}
-                                <button onClick={() => togglePrerequisite(id)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                     <X className="h-3 w-3" />
-                                </button>
-                            </Badge>
-                        ))}
-                    </div>
-                </div>
+                <Select
+                    isMulti
+                    options={subjectOptions}
+                    className="col-span-3"
+                    placeholder="Chọn môn tiên quyết"
+                />
               </div>
                <div className="grid grid-cols-4 items-start gap-4">
                 <Label htmlFor="subject-lecturers" className="text-right pt-2">Giảng viên</Label>
-                <div className="col-span-3">
-                    <Popover open={openLecturers} onOpenChange={setOpenLecturers}>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start font-normal">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                <span>Chọn giảng viên</span>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[350px] p-0" align="start">
-                             <Command>
-                                <CommandInput placeholder="Tìm giảng viên..." />
-                                <CommandList>
-                                    <CommandEmpty>Không tìm thấy giảng viên.</CommandEmpty>
-                                    <CommandGroup>
-                                    {lecturers.map((lecturer) => (
-                                        <CommandItem
-                                            key={lecturer.id}
-                                            value={lecturer.id}
-                                            onSelect={(currentValue) => {
-                                                const id = lecturers.find(l => l.name.toLowerCase() === currentValue)?.id || lecturer.id;
-                                                toggleLecturer(id);
-                                            }}
-                                        >
-                                            <div className={cn(
-                                                "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                                                selectedLecturers.includes(lecturer.id)
-                                                ? "bg-primary text-primary-foreground"
-                                                : "opacity-50 [&_svg]:invisible"
-                                            )}>
-                                                 <Check className="h-4 w-4" />
-                                            </div>
-                                            <span>{lecturer.name} ({lecturer.id})</span>
-                                        </CommandItem>
-                                    ))}
-                                    </CommandGroup>
-                                </CommandList>
-                            </Command>
-                        </PopoverContent>
-                    </Popover>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                        {selectedLecturers.map(id => (
-                            <Badge key={id} variant="secondary">
-                                {getLecturerName(id)}
-                                <button onClick={() => toggleLecturer(id)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                     <X className="h-3 w-3" />
-                                </button>
-                            </Badge>
-                        ))}
-                    </div>
-                </div>
+                <Select
+                    isMulti
+                    options={lecturerOptions}
+                    className="col-span-3"
+                    placeholder="Chọn giảng viên"
+                />
               </div>
             </div>
             <DialogFooter>
