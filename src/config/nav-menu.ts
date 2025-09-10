@@ -63,10 +63,6 @@ export const navMenuItems: NavMenuItem[] = [
         title: 'Môn học',
         href: '/subjects',
       },
-      {
-        title: 'Môn tiên quyết',
-        href: '/prerequisites',
-      },
     ],
   },
   {

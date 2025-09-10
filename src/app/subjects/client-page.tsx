@@ -175,6 +175,7 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects }: { subje
                 <TableHead>Số TC</TableHead>
                 <TableHead>Khoa</TableHead>
                 <TableHead>Loại</TableHead>
+                <TableHead>Môn tiên quyết</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -191,6 +192,11 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects }: { subje
                       <Badge variant={subject.type === 'chuyên ngành' ? 'default' : 'secondary'}>
                           {subject.type}
                       </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                        {subject.prerequisites.map(p => <Badge key={p} variant="outline">{getSubjectName(p)}</Badge>)}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <AlertDialog>
