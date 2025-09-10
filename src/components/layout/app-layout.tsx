@@ -11,7 +11,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </Sidebar>
         <SidebarInset className="min-w-0 flex-1">
           <Header />
-          <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+          <main className="p-4 sm:p-6 lg:p-8">
+            <div className="mx-auto max-w-screen-2xl">
+              {children}
+            </div>
+          </main>
         </SidebarInset>
       </div>
     </SidebarProvider>
