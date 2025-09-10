@@ -1,17 +1,18 @@
 import {
   BarChart3,
   Book,
-  BookMarked,
-  Calendar,
-  CalendarDays,
+  BookCopy,
+  BookUser,
+  CalendarCheck2,
+  CalendarClock,
   Contact,
   DoorOpen,
   FileText,
   GraduationCap,
   LayoutDashboard,
   Library,
-  Network,
   Presentation,
+  School,
   Users,
 } from 'lucide-react';
 
@@ -23,7 +24,7 @@ export type NavMenuItem = {
   children?: Omit<NavMenuItem, 'children' | 'icon' | 'isHeader'>[];
 };
 
-export const navMenuItems: NavMenuItem[] = [
+const adminNavMenuItems: NavMenuItem[] = [
   {
     title: 'Tổng quan',
     href: '/dashboard',
@@ -45,7 +46,7 @@ export const navMenuItems: NavMenuItem[] = [
   },
   {
     title: 'Học tập',
-    icon: Book,
+    icon: School,
     children: [
       {
         title: 'Khoa',
@@ -102,3 +103,75 @@ export const navMenuItems: NavMenuItem[] = [
     icon: BarChart3,
   },
 ];
+
+const lecturerNavMenuItems: NavMenuItem[] = [
+  {
+    title: 'Tổng quan',
+    href: '/dashboard', // Should be a lecturer-specific dashboard
+    icon: LayoutDashboard,
+  },
+  {
+    title: 'Giảng dạy',
+    isHeader: true,
+  },
+  {
+    title: 'Lớp học phần',
+    href: '/course-sections', // Filtered to their classes
+    icon: Presentation,
+  },
+  {
+    title: 'Lịch dạy',
+    href: '/schedules', // Filtered to their schedule
+    icon: CalendarClock,
+  },
+  {
+    title: 'Sinh viên',
+    href: '/students', // Students in their classes
+    icon: Users,
+  },
+  {
+    title: 'Chấm điểm',
+    href: '/results',
+    icon: FileText,
+  },
+];
+
+const studentNavMenuItems: NavMenuItem[] = [
+    {
+        title: 'Tổng quan',
+        href: '/dashboard', // Should be a student-specific dashboard
+        icon: LayoutDashboard,
+    },
+    {
+        title: 'Học tập',
+        isHeader: true,
+    },
+    {
+        title: 'Kết quả học tập',
+        href: '/results',
+        icon: GraduationCap,
+    },
+    {
+        title: 'Lịch học',
+        href: '/schedules',
+        icon: CalendarClock,
+    },
+    {
+        title: 'Đăng ký tín chỉ',
+        href: '/course-registration',
+        icon: BookCopy,
+    },
+    {
+        title: 'Chương trình khung',
+        href: '/program-details',
+        icon: BookUser,
+    }
+];
+
+// In a real app, you would have logic to determine the user's role
+// and export the appropriate menu item array.
+// For now, we'll just export the admin menu.
+export const navMenuItems: NavMenuItem[] = adminNavMenuItems;
+
+// You could also export all menus and decide which to render in the component
+export { adminNavMenuItems, lecturerNavMenuItems, studentNavMenuItems };

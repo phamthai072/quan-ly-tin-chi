@@ -21,6 +21,10 @@ import {
 export function NavMenu() {
   const pathname = usePathname();
 
+  // In a real app, you would get the user's role and select the correct menu array.
+  // For example: const menuItems = getMenuForRole(user.role);
+  const menuItems = navMenuItems;
+
   const renderMenuItem = (item: NavMenuItem) => {
     const isActive = item.href ? pathname.startsWith(item.href) : false;
 
@@ -29,8 +33,11 @@ export function NavMenu() {
     }
 
     if (item.children) {
+      // Check if any child link is active to keep the accordion open
+      const isChildActive = item.children.some(child => child.href && pathname.startsWith(child.href));
+      
       return (
-        <Accordion key={item.title} type="multiple" className="w-full">
+        <Accordion key={item.title} type="single" collapsible defaultValue={isChildActive ? item.title : undefined} className="w-full">
           <AccordionItem value={item.title} className="border-none">
             <AccordionTrigger
               className={cn(
@@ -69,7 +76,6 @@ export function NavMenu() {
       <SidebarMenuItem key={item.title}>
         <Link href={item.href!} passHref>
           <SidebarMenuButton
-            as="a"
             isActive={isActive}
             tooltip={item.title}
           >
@@ -83,7 +89,7 @@ export function NavMenu() {
 
   return (
     <SidebarMenu>
-      {navMenuItems.map((item) => renderMenuItem(item))}
+      {menuItems.map((item) => renderMenuItem(item))}
     </SidebarMenu>
   );
 }
