@@ -30,6 +30,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 const faculties = ["Công nghệ thông tin", "An toàn thông tin", "Viễn thông", "Điện tử"];
 
 export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  }
+
   return (
     <div className="space-y-8">
        <div className="flex justify-between items-center">
@@ -64,12 +68,8 @@ export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
                 </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="lecturer-email" className="text-right">Email</Label>
-                <Input id="lecturer-email" type="email" className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="lecturer-phone" className="text-right">Điện thoại</Label>
-                <Input id="lecturer-phone" className="col-span-3" />
+                <Label htmlFor="lecturer-unit-price" className="text-right">Đơn giá</Label>
+                <Input id="lecturer-unit-price" type="number" className="col-span-3" />
               </div>
             </div>
             <DialogFooter>
@@ -86,8 +86,7 @@ export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
                 <TableHead>Mã GV</TableHead>
                 <TableHead>Họ và tên</TableHead>
                 <TableHead>Khoa</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Điện thoại</TableHead>
+                <TableHead className="text-right">Đơn giá</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -99,8 +98,7 @@ export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
                   <TableCell className="font-medium">{lecturer.id}</TableCell>
                   <TableCell>{lecturer.name}</TableCell>
                   <TableCell>{lecturer.faculty}</TableCell>
-                  <TableCell>{lecturer.email}</TableCell>
-                  <TableCell>{lecturer.phone}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(lecturer.unitPrice)}</TableCell>
                   <TableCell>
                     <AlertDialog>
                       <DropdownMenu>

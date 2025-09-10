@@ -12,8 +12,7 @@ export type Lecturer = {
   id: string;
   name: string;
   faculty: string;
-  email: string;
-  phone: string;
+  unitPrice: number;
 };
 
 
@@ -33,10 +32,10 @@ export const mockStudents: Student[] = [
 ];
 
 export const mockLecturers: Lecturer[] = [
-  { id: 'GV001', name: 'Trần Văn A', faculty: 'Công nghệ thông tin', email: 'atv@ptit.edu.vn', phone: '0987654321' },
-  { id: 'GV002', name: 'Nguyễn Thị B', faculty: 'An toàn thông tin', email: 'btn@ptit.edu.vn', phone: '0123456789' },
-  { id: 'GV003', name: 'Lê Văn C', faculty: 'Viễn thông', email: 'cvl@ptit.edu.vn', phone: '0912345678' },
-  { id: 'GV004', name: 'Phạm Thị D', faculty: 'Điện tử', email: 'dtp@ptit.edu.vn', phone: '0865432198' },
+  { id: 'GV001', name: 'Trần Văn A', faculty: 'Công nghệ thông tin', unitPrice: 150000 },
+  { id: 'GV002', name: 'Nguyễn Thị B', faculty: 'An toàn thông tin', unitPrice: 175000 },
+  { id: 'GV003', name: 'Lê Văn C', faculty: 'Viễn thông', unitPrice: 160000 },
+  { id: 'GV004', name: 'Phạm Thị D', faculty: 'Điện tử', unitPrice: 180000 },
 ];
 
 export const mockGpaDistribution = [
