@@ -25,6 +25,10 @@ import { type Student } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const majors = ["Công nghệ phần mềm", "An toàn thông tin", "Viễn thông", "Điện tử", "Mạng máy tính"];
+const cohorts = ["D20", "D21", "D22"];
 
 export function StudentsClientPage({ students }: { students: Student[] }) {
   return (
@@ -46,20 +50,42 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="student-id" className="text-right">Mã SV</Label>
-                <Input id="student-id" className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="student-name" className="text-right">Họ và tên</Label>
                 <Input id="student-name" className="col-span-3" />
               </div>
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="student-major" className="text-right">Chuyên ngành</Label>
-                <Input id="student-major" className="col-span-3" />
+                 <Select>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Chọn chuyên ngành" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {majors.map(major => <SelectItem key={major} value={major}>{major}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="student-cohort" className="text-right">Khóa học</Label>
+                 <Select>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Chọn khóa học" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cohorts.map(cohort => <SelectItem key={cohort} value={cohort}>{cohort}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="student-class" className="text-right">Lớp</Label>
-                <Input id="student-class" className="col-span-3" />
+                <Label htmlFor="student-program" className="text-right">Hệ đào tạo</Label>
+                 <Select>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Chọn hệ đào tạo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cao-dang">Cao đẳng</SelectItem>
+                    <SelectItem value="chinh-quy">Chính quy</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter>
