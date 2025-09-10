@@ -8,6 +8,15 @@ export type Student = {
   failedCourses: number;
 };
 
+export type Lecturer = {
+  id: string;
+  name: string;
+  faculty: string;
+  email: string;
+  phone: string;
+};
+
+
 export const mockStudents: Student[] = [
   { id: 'B20DCCN001', name: 'Nguyễn Văn An', class: 'D20CNPM1', major: 'Công nghệ phần mềm', program: 'Đại trà', gpa: 3.8, failedCourses: 0 },
   { id: 'B20DCCN002', name: 'Trần Thị Bình', class: 'D20CNPM2', major: 'Công nghệ phần mềm', program: 'Chất lượng cao', gpa: 3.9, failedCourses: 0 },
@@ -21,6 +30,13 @@ export const mockStudents: Student[] = [
   { id: 'B20DCVT010', name: 'Bùi Thị Lan', class: 'D20VT2', major: 'Viễn thông', program: 'Đại trà', gpa: 2.2, failedCourses: 3 },
   { id: 'B20DCDT011', name: 'Trịnh Văn Minh', class: 'D20DT2', major: 'Điện tử', program: 'Chất lượng cao', gpa: 4.0, failedCourses: 0 },
   { id: 'B20DCMT012', name: 'Đặng Thị Nga', class: 'D20MM2', major: 'Mạng máy tính', program: 'Đại trà', gpa: 2.8, failedCourses: 2 },
+];
+
+export const mockLecturers: Lecturer[] = [
+  { id: 'GV001', name: 'Trần Văn A', faculty: 'Công nghệ thông tin', email: 'atv@ptit.edu.vn', phone: '0987654321' },
+  { id: 'GV002', name: 'Nguyễn Thị B', faculty: 'An toàn thông tin', email: 'btn@ptit.edu.vn', phone: '0123456789' },
+  { id: 'GV003', name: 'Lê Văn C', faculty: 'Viễn thông', email: 'cvl@ptit.edu.vn', phone: '0912345678' },
+  { id: 'GV004', name: 'Phạm Thị D', faculty: 'Điện tử', email: 'dtp@ptit.edu.vn', phone: '0865432198' },
 ];
 
 export const mockGpaDistribution = [
