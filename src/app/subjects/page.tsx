@@ -1,17 +1,8 @@
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { mockSubjects, mockFaculties } from '@/lib/mock-data';
+import { SubjectsClientPage } from './client-page';
 
 export default function SubjectsPage() {
-  return (
-    <div className="space-y-8">
-       <h1 className="text-3xl font-bold tracking-tight">Quản lý Môn học</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Danh sách Môn học</CardTitle>
-          <CardDescription>
-            Trang này đang được xây dựng.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    </div>
-  );
+  const subjects = mockSubjects;
+  const faculties = mockFaculties;
+  return <SubjectsClientPage subjects={subjects} faculties={faculties} allSubjects={subjects} />;
 }

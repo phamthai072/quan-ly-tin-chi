@@ -46,6 +46,15 @@ export type Semester = {
     endDate: Date;
 }
 
+export type Subject = {
+    id: string;
+    name: string;
+    credits: number;
+    facultyId: string;
+    type: 'cơ bản' | 'chuyên ngành';
+    prerequisites: string[];
+}
+
 
 export const mockStudents: Student[] = [
   { id: 'B20DCCN001', name: 'Nguyễn Văn An', class: 'D20CNPM1', major: 'Công nghệ phần mềm', program: 'Đại trà', gpa: 3.8, failedCourses: 0 },
@@ -123,4 +132,13 @@ export const mockRoomUtilization = [
     { id: 'P005', name: 'Phòng 402-A2', capacity: 80, usage: 25 },
     { id: 'P006', name: 'Phòng Lab 1-A3', capacity: 50, usage: 60 },
     { id: 'P007', name: 'Phòng Lab 2-A3', capacity: 50, usage: 58 },
+];
+
+export const mockSubjects: Subject[] = [
+    { id: 'BAS101', name: 'Toán cao cấp 1', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [] },
+    { id: 'BAS102', name: 'Vật lý 1', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [] },
+    { id: 'INT101', name: 'Nhập môn lập trình', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [] },
+    { id: 'INT201', name: 'Cấu trúc dữ liệu và giải thuật', credits: 4, facultyId: 'CNTT', type: 'chuyên ngành', prerequisites: ['INT101'] },
+    { id: 'INT301', name: 'Cơ sở dữ liệu', credits: 3, facultyId: 'CNTT', type: 'chuyên ngành', prerequisites: ['INT201'] },
+    { id: 'NET201', name: 'Mạng máy tính', credits: 3, facultyId: 'ATTT', type: 'chuyên ngành', prerequisites: ['INT101'] },
 ];
