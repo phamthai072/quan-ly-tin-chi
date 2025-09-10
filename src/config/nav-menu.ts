@@ -22,7 +22,7 @@ export type NavMenuItem = {
 export const navMenuItems: NavMenuItem[] = [
     {
         title: "Quản trị viên",
-        icon: LayoutDashboard,
+        icon: School,
         children: [
             {
                 title: 'Tổng quan',
@@ -60,26 +60,20 @@ export const navMenuItems: NavMenuItem[] = [
                 title: 'Lịch học',
                 href: '/schedules',
             },
-            {
-                title: 'Sinh viên',
-                href: '/students',
-            },
-            {
-                title: 'Giảng viên',
-                href: '/lecturers',
-            },
-            {
-                title: 'Kết quả',
-                href: '/results',
-            },
+            
+           
         ]
     },
 
     {
 
         title: "Giảng viên",
-        icon: LayoutDashboard,
+        icon: BookUser,
         children: [
+            {
+                title: 'Giảng viên',
+                href: '/lecturers',
+            },
             {
                 title: 'Lớp học phần',
                 href: '/course-sections', // Filtered to their classes
@@ -93,8 +87,12 @@ export const navMenuItems: NavMenuItem[] = [
 
     {
         title: "Sinh viên",
-        icon: LayoutDashboard,
+        icon: Users,
         children: [
+            {
+                title: 'Sinh viên',
+                href: '/students',
+            },
             {
                 title: 'Kết quả học tập',
                 href: '/results',
