@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Search } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { type Faculty } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -61,6 +61,18 @@ export function FacultiesClientPage({ faculties }: { faculties: Faculty[] }) {
           </DialogContent>
         </Dialog>
       </div>
+
+       <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+            type="search"
+            placeholder="Tìm kiếm khoa..."
+            className="w-full appearance-none bg-background pl-8 shadow-none md:w-1/2 lg:w-1/3"
+            />
+        </div>
+      </div>
+
       <Card>
         <CardContent>
           <Table>
