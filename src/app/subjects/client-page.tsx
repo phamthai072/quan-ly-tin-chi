@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, X } from 'lucide-react';
+import { Check, MoreHorizontal, PlusCircle, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { type Subject, type Faculty } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
