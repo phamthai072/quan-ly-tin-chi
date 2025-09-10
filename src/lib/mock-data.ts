@@ -53,6 +53,7 @@ export type Subject = {
     facultyId: string;
     type: 'cơ bản' | 'chuyên ngành';
     prerequisites: string[];
+    lecturerIds: string[];
 }
 
 
@@ -135,10 +136,10 @@ export const mockRoomUtilization = [
 ];
 
 export const mockSubjects: Subject[] = [
-    { id: 'BAS101', name: 'Toán cao cấp 1', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [] },
-    { id: 'BAS102', name: 'Vật lý 1', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [] },
-    { id: 'INT101', name: 'Nhập môn lập trình', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [] },
-    { id: 'INT201', name: 'Cấu trúc dữ liệu và giải thuật', credits: 4, facultyId: 'CNTT', type: 'chuyên ngành', prerequisites: ['INT101'] },
-    { id: 'INT301', name: 'Cơ sở dữ liệu', credits: 3, facultyId: 'CNTT', type: 'chuyên ngành', prerequisites: ['INT201'] },
-    { id: 'NET201', name: 'Mạng máy tính', credits: 3, facultyId: 'ATTT', type: 'chuyên ngành', prerequisites: ['INT101'] },
+    { id: 'BAS101', name: 'Toán cao cấp 1', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [], lecturerIds: ['GV001'] },
+    { id: 'BAS102', name: 'Vật lý 1', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [], lecturerIds: ['GV004'] },
+    { id: 'INT101', name: 'Nhập môn lập trình', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [], lecturerIds: ['GV001', 'GV002'] },
+    { id: 'INT201', name: 'Cấu trúc dữ liệu và giải thuật', credits: 4, facultyId: 'CNTT', type: 'chuyên ngành', prerequisites: ['INT101'], lecturerIds: ['GV001'] },
+    { id: 'INT301', name: 'Cơ sở dữ liệu', credits: 3, facultyId: 'CNTT', type: 'chuyên ngành', prerequisites: ['INT201'], lecturerIds: ['GV002'] },
+    { id: 'NET201', name: 'Mạng máy tính', credits: 3, facultyId: 'ATTT', type: 'chuyên ngành', prerequisites: ['INT101'], lecturerIds: ['GV003'] },
 ];

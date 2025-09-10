@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Check, MoreHorizontal, PlusCircle, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { type Subject, type Faculty } from '@/lib/mock-data';
+import { type Subject, type Faculty, type Lecturer } from '@/lib/mock-data';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,7 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 
-export function SubjectsClientPage({ subjects, faculties, allSubjects }: { subjects: Subject[], faculties: Faculty[], allSubjects: Subject[] }) {
+export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers }: { subjects: Subject[], faculties: Faculty[], allSubjects: Subject[], lecturers: Lecturer[] }) {
   
   const getFacultyName = (facultyId: string) => {
     return faculties.find(f => f.id === facultyId)?.name || facultyId;
@@ -42,14 +42,28 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects }: { subje
     return allSubjects.find(s => s.id === subjectId)?.name || subjectId;
   }
 
+  const getLecturerName = (lecturerId: string) => {
+    return lecturers.find(l => l.id === lecturerId)?.name || lecturerId;
+  }
+
   const [selectedPrerequisites, setSelectedPrerequisites] = React.useState<string[]>([]);
   const [openPrerequisites, setOpenPrerequisites] = React.useState(false);
+  const [selectedLecturers, setSelectedLecturers] = React.useState<string[]>([]);
+  const [openLecturers, setOpenLecturers] = React.useState(false);
 
   const togglePrerequisite = (subjectId: string) => {
     setSelectedPrerequisites(prev => 
       prev.includes(subjectId) 
         ? prev.filter(id => id !== subjectId) 
         : [...prev, subjectId]
+    );
+  }
+
+  const toggleLecturer = (lecturerId: string) => {
+    setSelectedLecturers(prev => 
+      prev.includes(lecturerId) 
+        ? prev.filter(id => id !== lecturerId) 
+        : [...prev, lecturerId]
     );
   }
 
@@ -158,6 +172,58 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects }: { subje
                     </div>
                 </div>
               </div>
+               <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="subject-lecturers" className="text-right pt-2">Giảng viên</Label>
+                <div className="col-span-3">
+                    <Popover open={openLecturers} onOpenChange={setOpenLecturers}>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-start font-normal">
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                <span>Chọn giảng viên</span>
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[350px] p-0" align="start">
+                             <Command>
+                                <CommandInput placeholder="Tìm giảng viên..." />
+                                <CommandList>
+                                    <CommandEmpty>Không tìm thấy giảng viên.</CommandEmpty>
+                                    <CommandGroup>
+                                    {lecturers.map((lecturer) => (
+                                        <CommandItem
+                                            key={lecturer.id}
+                                            value={lecturer.id}
+                                            onSelect={() => {
+                                                toggleLecturer(lecturer.id);
+                                            }}
+                                        >
+                                            <div className={cn(
+                                                "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                                                selectedLecturers.includes(lecturer.id)
+                                                ? "bg-primary text-primary-foreground"
+                                                : "opacity-50 [&_svg]:invisible"
+                                            )}>
+                                                 <Check className="h-4 w-4" />
+                                            </div>
+                                            <span>{lecturer.name} ({lecturer.id})</span>
+                                        </CommandItem>
+                                    ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                        {selectedLecturers.map(id => (
+                            <Badge key={id} variant="secondary">
+                                {getLecturerName(id)}
+                                <button onClick={() => toggleLecturer(id)} className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                     <X className="h-3 w-3" />
+                                </button>
+                            </Badge>
+                        ))}
+                    </div>
+                </div>
+              </div>
             </div>
             <DialogFooter>
               <Button type="submit">Lưu</Button>
@@ -176,6 +242,7 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects }: { subje
                 <TableHead>Khoa</TableHead>
                 <TableHead>Loại</TableHead>
                 <TableHead>Môn tiên quyết</TableHead>
+                <TableHead>Giảng viên</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -196,6 +263,11 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects }: { subje
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                         {subject.prerequisites.map(p => <Badge key={p} variant="outline">{getSubjectName(p)}</Badge>)}
+                    </div>
+                  </TableCell>
+                   <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                        {subject.lecturerIds.map(id => <Badge key={id} variant="outline">{getLecturerName(id)}</Badge>)}
                     </div>
                   </TableCell>
                   <TableCell>
