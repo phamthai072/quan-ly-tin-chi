@@ -30,7 +30,7 @@ export function NavMenu() {
 
     if (item.children) {
       return (
-        <Accordion type="multiple" className="w-full">
+        <Accordion key={item.title} type="multiple" className="w-full">
           <AccordionItem value={item.title} className="border-none">
             <AccordionTrigger
               className={cn(
