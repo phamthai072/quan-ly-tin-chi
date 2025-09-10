@@ -23,11 +23,12 @@ export const navMenuItems: NavMenuItem[] = [
     {
         title: "Quản trị viên",
         isHeader: true,
+        icon: LayoutDashboard,
+
     },
     {
         title: 'Tổng quan',
         href: '/dashboard',
-        icon: LayoutDashboard,
     },
     {
         title: 'Khoa',
@@ -78,6 +79,8 @@ export const navMenuItems: NavMenuItem[] = [
 
         title: "Giảng viên",
         isHeader: true,
+        icon: LayoutDashboard,
+
     },
     {
         title: 'Lớp học phần',
@@ -93,6 +96,8 @@ export const navMenuItems: NavMenuItem[] = [
     {
         title: "Sinh viên",
         isHeader: true,
+        icon: LayoutDashboard,
+
     },
     {
         title: 'Kết quả học tập',

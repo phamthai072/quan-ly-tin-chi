@@ -5,13 +5,13 @@ import { Header } from './header';
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-background">
+      <div className="flex min-h-screen w-full bg-background">
         <Sidebar>
           <AppSidebar />
         </Sidebar>
-        <SidebarInset className="min-w-0">
+        <SidebarInset className="min-w-0 flex-1">
           <Header />
-          <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+          <main className="p-4 sm:p-6 lg:p-8">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
