@@ -15,6 +15,11 @@ export type Lecturer = {
   unitPrice: number;
 };
 
+export type Faculty = {
+  id: string;
+  name: string;
+};
+
 
 export const mockStudents: Student[] = [
   { id: 'B20DCCN001', name: 'Nguyễn Văn An', class: 'D20CNPM1', major: 'Công nghệ phần mềm', program: 'Đại trà', gpa: 3.8, failedCourses: 0 },
@@ -36,6 +41,14 @@ export const mockLecturers: Lecturer[] = [
   { id: 'GV002', name: 'Nguyễn Thị B', faculty: 'An toàn thông tin', unitPrice: 175000 },
   { id: 'GV003', name: 'Lê Văn C', faculty: 'Viễn thông', unitPrice: 160000 },
   { id: 'GV004', name: 'Phạm Thị D', faculty: 'Điện tử', unitPrice: 180000 },
+];
+
+export const mockFaculties: Faculty[] = [
+    { id: 'CNTT', name: 'Công nghệ thông tin' },
+    { id: 'ATTT', name: 'An toàn thông tin' },
+    { id: 'VT', name: 'Viễn thông' },
+    { id: 'DT', name: 'Điện tử' },
+    { id: 'KT', name: 'Kinh tế' },
 ];
 
 export const mockGpaDistribution = [
