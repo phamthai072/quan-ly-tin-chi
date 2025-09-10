@@ -1,18 +1,16 @@
 import {
   BarChart3,
-  Book,
   BookCopy,
   BookUser,
-  CalendarCheck2,
   CalendarClock,
   Contact,
-  DoorOpen,
   FileText,
   GraduationCap,
   LayoutDashboard,
-  Library,
   Presentation,
   School,
+  ShieldCheck,
+  User,
   Users,
 } from 'lucide-react';
 
@@ -26,27 +24,13 @@ export type NavMenuItem = {
 
 const adminNavMenuItems: NavMenuItem[] = [
   {
-    title: 'Hệ thống',
-    isHeader: true,
-  },
-  {
     title: 'Tổng quan',
     href: '/dashboard',
     icon: LayoutDashboard,
   },
   {
-    title: 'Quản lý',
+    title: 'Quản lý Hệ thống',
     isHeader: true,
-  },
-  {
-    title: 'Sinh viên',
-    href: '/students',
-    icon: GraduationCap,
-  },
-  {
-    title: 'Giảng viên',
-    href: '/lecturers',
-    icon: Contact,
   },
   {
     title: 'Học tập',
@@ -68,16 +52,16 @@ const adminNavMenuItems: NavMenuItem[] = [
         title: 'Môn học',
         href: '/subjects',
       },
+      {
+        title: 'Học kỳ',
+        href: '/semesters',
+      },
     ],
   },
   {
     title: 'Lớp & Lịch',
     icon: Presentation,
     children: [
-      {
-        title: 'Học kỳ',
-        href: '/semesters',
-      },
       {
         title: 'Lớp học phần',
         href: '/course-sections',
@@ -91,6 +75,20 @@ const adminNavMenuItems: NavMenuItem[] = [
         href: '/schedules',
       },
     ],
+  },
+  {
+    title: 'Người dùng',
+    icon: Users,
+    children: [
+        {
+            title: 'Sinh viên',
+            href: '/students',
+        },
+        {
+            title: 'Giảng viên',
+            href: '/lecturers',
+        },
+    ]
   },
   {
     title: 'Kết quả',
@@ -110,7 +108,7 @@ const adminNavMenuItems: NavMenuItem[] = [
 
 const lecturerNavMenuItems: NavMenuItem[] = [
   {
-    title: 'Tổng quan',
+    title: 'Bảng điều khiển',
     href: '/dashboard', // Should be a lecturer-specific dashboard
     icon: LayoutDashboard,
   },
@@ -128,8 +126,8 @@ const lecturerNavMenuItems: NavMenuItem[] = [
     href: '/schedules', // Filtered to their schedule
     icon: CalendarClock,
   },
-  {
-    title: 'Sinh viên',
+    {
+    title: 'Sinh viên của tôi',
     href: '/students', // Students in their classes
     icon: Users,
   },
@@ -142,7 +140,7 @@ const lecturerNavMenuItems: NavMenuItem[] = [
 
 const studentNavMenuItems: NavMenuItem[] = [
     {
-        title: 'Tổng quan',
+        title: 'Bảng điều khiển',
         href: '/dashboard', // Should be a student-specific dashboard
         icon: LayoutDashboard,
     },
@@ -172,10 +170,27 @@ const studentNavMenuItems: NavMenuItem[] = [
     }
 ];
 
+// Combine all menus for demonstration purposes. 
 // In a real app, you would have logic to determine the user's role
 // and export the appropriate menu item array.
-// For now, we'll just export the admin menu.
-export const navMenuItems: NavMenuItem[] = adminNavMenuItems;
+export const navMenuItems: NavMenuItem[] = [
+    {
+        title: "Quản trị viên",
+        isHeader: true,
+    },
+    ...adminNavMenuItems,
+    {
+        title: "Giảng viên",
+        isHeader: true,
+    },
+    ...lecturerNavMenuItems,
+    {
+        title: "Sinh viên",
+        isHeader: true,
+    },
+    ...studentNavMenuItems,
+];
+
 
 // You could also export all menus and decide which to render in the component
 export { adminNavMenuItems, lecturerNavMenuItems, studentNavMenuItems };
