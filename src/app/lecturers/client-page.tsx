@@ -113,38 +113,78 @@ export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
                   <TableCell>{lecturer.faculty}</TableCell>
                   <TableCell className="text-right">{formatCurrency(lecturer.unitPrice)}</TableCell>
                   <TableCell>
-                    <AlertDialog>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>Sửa</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem className="text-destructive">
-                              Xóa
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Bạn có chắc không?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Hành động này không thể được hoàn tác. Thao tác này sẽ xóa vĩnh viễn giảng viên khỏi hệ thống.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Hủy</AlertDialogCancel>
-                          <AlertDialogAction>Tiếp tục</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Dialog>
+                      <AlertDialog>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DialogTrigger asChild>
+                              <DropdownMenuItem>Sửa</DropdownMenuItem>
+                            </DialogTrigger>
+                            <DropdownMenuSeparator />
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem className="text-destructive">
+                                Xóa
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Bạn có chắc không?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Hành động này không thể được hoàn tác. Thao tác này sẽ xóa vĩnh viễn giảng viên khỏi hệ thống.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Hủy</AlertDialogCancel>
+                            <AlertDialogAction>Tiếp tục</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Sửa thông tin giảng viên</DialogTitle>
+                          <DialogDescription>
+                            Thay đổi thông tin chi tiết của giảng viên.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                           <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="lecturer-id-edit" className="text-right">Mã GV</Label>
+                            <Input id="lecturer-id-edit" defaultValue={lecturer.id} className="col-span-3" readOnly />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="lecturer-name-edit" className="text-right">Họ và tên</Label>
+                            <Input id="lecturer-name-edit" defaultValue={lecturer.name} className="col-span-3" />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="lecturer-faculty-edit" className="text-right">Khoa</Label>
+                            <Select defaultValue={lecturer.faculty}>
+                              <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Chọn khoa" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {faculties.map(faculty => <SelectItem key={faculty} value={faculty}>{faculty}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="lecturer-unit-price-edit" className="text-right">Đơn giá</Label>
+                            <Input id="lecturer-unit-price-edit" type="number" defaultValue={lecturer.unitPrice} className="col-span-3" />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button type="submit">Lưu thay đổi</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </TableCell>
                 </TableRow>
               ))}

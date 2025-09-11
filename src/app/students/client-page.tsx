@@ -138,39 +138,98 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
                     {student.gpa.toFixed(2)}
                   </TableCell>
                   <TableCell>
-                    <AlertDialog>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>Sửa</DropdownMenuItem>
-                          <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem className="text-destructive">
-                              Xóa
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Bạn có chắc không?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Hành động này không thể được hoàn tác. Thao tác này sẽ xóa vĩnh viễn sinh viên khỏi hệ thống.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Hủy</AlertDialogCancel>
-                          <AlertDialogAction>Tiếp tục</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Dialog>
+                      <AlertDialog>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                             <DialogTrigger asChild>
+                                <DropdownMenuItem>Sửa</DropdownMenuItem>
+                            </DialogTrigger>
+                            <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem className="text-destructive">
+                                Xóa
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Bạn có chắc không?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Hành động này không thể được hoàn tác. Thao tác này sẽ xóa vĩnh viễn sinh viên khỏi hệ thống.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Hủy</AlertDialogCancel>
+                            <AlertDialogAction>Tiếp tục</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Sửa thông tin sinh viên</DialogTitle>
+                          <DialogDescription>
+                            Thay đổi thông tin chi tiết của sinh viên.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                           <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="student-id-edit" className="text-right">Mã SV</Label>
+                                <Input id="student-id-edit" defaultValue={student.id} className="col-span-3" readOnly />
+                            </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="student-name-edit" className="text-right">Họ và tên</Label>
+                            <Input id="student-name-edit" defaultValue={student.name} className="col-span-3" />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="student-major-edit" className="text-right">Chuyên ngành</Label>
+                            <Select defaultValue={student.major}>
+                              <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Chọn chuyên ngành" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {majors.map(major => <SelectItem key={major} value={major}>{major}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="student-cohort-edit" className="text-right">Khóa học</Label>
+                            <Select defaultValue={student.class.substring(0,3)}>
+                              <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Chọn khóa học" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {cohorts.map(cohort => <SelectItem key={cohort} value={cohort}>{cohort}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                           <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="student-program-edit" className="text-right">Hệ đào tạo</Label>
+                            <Select defaultValue={student.program}>
+                              <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Chọn hệ đào tạo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Đại trà">Đại trà</SelectItem>
+                                <SelectItem value="Chất lượng cao">Chất lượng cao</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button type="submit">Lưu thay đổi</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </TableCell>
                 </TableRow>
               ))}

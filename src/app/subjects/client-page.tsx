@@ -45,6 +45,8 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
 
   const subjectOptions = allSubjects.map(s => ({ value: s.id, label: `${s.name} (${s.id})` }));
   const lecturerOptions = lecturers.map(l => ({ value: l.id, label: `${l.name} (${l.id})` }));
+  const facultyOptions = faculties.map(f => ({ value: f.id, label: f.name }));
+  const typeOptions = [{value: 'cơ bản', label: 'Cơ bản'}, {value: 'chuyên ngành', label: 'Chuyên ngành'}];
 
   return (
     <div className="space-y-8">
@@ -79,7 +81,7 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject-faculty" className="text-right">Khoa</Label>
                  <Select
-                    options={faculties.map(f => ({ value: f.id, label: f.name }))}
+                    options={facultyOptions}
                     className="col-span-3"
                     placeholder="Chọn khoa"
                  />
@@ -87,7 +89,7 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject-type" className="text-right">Loại môn</Label>
                  <Select
-                    options={[{value: 'cơ bản', label: 'Cơ bản'}, {value: 'chuyên ngành', label: 'Chuyên ngành'}]}
+                    options={typeOptions}
                     className="col-span-3"
                     placeholder="Chọn loại môn"
                  />
@@ -170,39 +172,106 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                     </div>
                   </TableCell>
                   <TableCell>
-                    <AlertDialog>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>Sửa</DropdownMenuItem>
-                          <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem className="text-destructive">
-                              Xóa
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Bạn có chắc không?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Hành động này không thể được hoàn tác. Thao tác này sẽ xóa vĩnh viễn môn học khỏi hệ thống.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Hủy</AlertDialogCancel>
-                          <AlertDialogAction>Tiếp tục</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Dialog>
+                      <AlertDialog>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DialogTrigger asChild>
+                              <DropdownMenuItem>Sửa</DropdownMenuItem>
+                            </DialogTrigger>
+                            <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem className="text-destructive">
+                                Xóa
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Bạn có chắc không?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Hành động này không thể được hoàn tác. Thao tác này sẽ xóa vĩnh viễn môn học khỏi hệ thống.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Hủy</AlertDialogCancel>
+                            <AlertDialogAction>Tiếp tục</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                      <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle>Sửa thông tin môn học</DialogTitle>
+                          <DialogDescription>
+                            Thay đổi thông tin chi tiết của môn học.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                           <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="subject-id-edit" className="text-right">Mã môn học</Label>
+                            <Input id="subject-id-edit" defaultValue={subject.id} className="col-span-3" readOnly/>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="subject-name-edit" className="text-right">Tên môn học</Label>
+                            <Input id="subject-name-edit" defaultValue={subject.name} className="col-span-3" />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="subject-credits-edit" className="text-right">Số tín chỉ</Label>
+                            <Input id="subject-credits-edit" type="number" defaultValue={subject.credits} className="col-span-3" />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="subject-faculty-edit" className="text-right">Khoa</Label>
+                            <Select
+                                options={facultyOptions}
+                                className="col-span-3"
+                                placeholder="Chọn khoa"
+                                defaultValue={facultyOptions.find(f => f.value === subject.facultyId)}
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="subject-type-edit" className="text-right">Loại môn</Label>
+                            <Select
+                                options={typeOptions}
+                                className="col-span-3"
+                                placeholder="Chọn loại môn"
+                                defaultValue={typeOptions.find(t => t.value === subject.type)}
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-start gap-4">
+                            <Label htmlFor="subject-prerequisites-edit" className="text-right pt-2">Môn tiên quyết</Label>
+                            <Select
+                                isMulti
+                                options={subjectOptions}
+                                className="col-span-3"
+                                placeholder="Chọn môn tiên quyết"
+                                defaultValue={subject.prerequisites.map(p => subjectOptions.find(s => s.value === p))}
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-start gap-4">
+                            <Label htmlFor="subject-lecturers-edit" className="text-right pt-2">Giảng viên</Label>
+                            <Select
+                                isMulti
+                                options={lecturerOptions}
+                                className="col-span-3"
+                                placeholder="Chọn giảng viên"
+                                defaultValue={subject.lecturerIds.map(id => lecturerOptions.find(l => l.value === id))}
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button type="submit">Lưu thay đổi</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </TableCell>
                 </TableRow>
               ))}
