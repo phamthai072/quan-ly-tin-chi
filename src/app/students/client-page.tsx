@@ -30,8 +30,29 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 const majors = ["Công nghệ phần mềm", "An toàn thông tin", "Viễn thông", "Điện tử", "Mạng máy tính"];
 const cohorts = ["D20", "D21", "D22"];
+const programs = ["Đại trà", "Chất lượng cao"];
 
-export function StudentsClientPage({ students }: { students: Student[] }) {
+export function StudentsClientPage({ students: initialStudents }: { students: Student[] }) {
+  const [students, setStudents] = React.useState(initialStudents);
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const [newStudentName, setNewStudentName] = React.useState('');
+  const [newStudentMajor, setNewStudentMajor] = React.useState('');
+  const [newStudentCohort, setNewStudentCohort] = React.useState('');
+  const [newStudentProgram, setNewStudentProgram] = React.useState('');
+
+  const [editingStudent, setEditingStudent] = React.useState<Student | null>(null);
+
+  const handleSearch = () => {
+    const filteredStudents = initialStudents.filter(s =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.class.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.major.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setStudents(filteredStudents);
+  };
+  
   return (
     <div className="space-y-8">
        <div className="flex justify-between items-center">
@@ -52,11 +73,11 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="student-name" className="text-right">Họ và tên</Label>
-                <Input id="student-name" className="col-span-3" />
+                <Input id="student-name" value={newStudentName} onChange={e => setNewStudentName(e.target.value)} className="col-span-3" />
               </div>
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="student-major" className="text-right">Chuyên ngành</Label>
-                 <Select>
+                 <Select value={newStudentMajor} onValueChange={setNewStudentMajor}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Chọn chuyên ngành" />
                   </SelectTrigger>
@@ -67,7 +88,7 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
               </div>
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="student-cohort" className="text-right">Khóa học</Label>
-                 <Select>
+                 <Select value={newStudentCohort} onValueChange={setNewStudentCohort}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Chọn khóa học" />
                   </SelectTrigger>
@@ -78,13 +99,12 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="student-program" className="text-right">Hệ đào tạo</Label>
-                 <Select>
+                 <Select value={newStudentProgram} onValueChange={setNewStudentProgram}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Chọn hệ đào tạo" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cao-dang">Cao đẳng</SelectItem>
-                    <SelectItem value="chinh-quy">Chính quy</SelectItem>
+                    {programs.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -102,10 +122,12 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
               <Input
               type="search"
               placeholder="Tìm kiếm sinh viên..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full appearance-none bg-background pl-8 shadow-none md:w-[280px]"
               />
           </div>
-          <Button>Tìm kiếm</Button>
+          <Button onClick={handleSearch}>Tìm kiếm</Button>
       </div>
 
       <Card>
@@ -150,7 +172,7 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                              <DialogTrigger asChild>
-                                <DropdownMenuItem>Sửa</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setEditingStudent({...student})}>Sửa</DropdownMenuItem>
                             </DialogTrigger>
                             <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
                             <DropdownMenuSeparator />
@@ -181,18 +203,19 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
                             Thay đổi thông tin chi tiết của sinh viên.
                           </DialogDescription>
                         </DialogHeader>
+                        {editingStudent && (
                         <div className="grid gap-4 py-4">
                            <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="student-id-edit" className="text-right">Mã SV</Label>
-                                <Input id="student-id-edit" defaultValue={student.id} className="col-span-3" readOnly />
+                                <Input id="student-id-edit" value={editingStudent.id} className="col-span-3" readOnly />
                             </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="student-name-edit" className="text-right">Họ và tên</Label>
-                            <Input id="student-name-edit" defaultValue={student.name} className="col-span-3" />
+                            <Input id="student-name-edit" value={editingStudent.name} onChange={e => setEditingStudent({...editingStudent, name: e.target.value})} className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="student-major-edit" className="text-right">Chuyên ngành</Label>
-                            <Select defaultValue={student.major}>
+                            <Select value={editingStudent.major} onValueChange={value => setEditingStudent({...editingStudent, major: value})}>
                               <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Chọn chuyên ngành" />
                               </SelectTrigger>
@@ -203,7 +226,7 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="student-cohort-edit" className="text-right">Khóa học</Label>
-                            <Select defaultValue={student.class.substring(0,3)}>
+                            <Select value={editingStudent.class.substring(0,3)} onValueChange={value => setEditingStudent({...editingStudent, class: value + editingStudent.class.substring(3) })}>
                               <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Chọn khóa học" />
                               </SelectTrigger>
@@ -214,17 +237,17 @@ export function StudentsClientPage({ students }: { students: Student[] }) {
                           </div>
                            <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="student-program-edit" className="text-right">Hệ đào tạo</Label>
-                            <Select defaultValue={student.program}>
+                            <Select value={editingStudent.program} onValueChange={value => setEditingStudent({...editingStudent, program: value})}>
                               <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Chọn hệ đào tạo" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Đại trà">Đại trà</SelectItem>
-                                <SelectItem value="Chất lượng cao">Chất lượng cao</SelectItem>
+                                {programs.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                               </SelectContent>
                             </Select>
                           </div>
                         </div>
+                        )}
                         <DialogFooter>
                           <Button type="submit">Lưu thay đổi</Button>
                         </DialogFooter>

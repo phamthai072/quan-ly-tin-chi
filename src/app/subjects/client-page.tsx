@@ -29,8 +29,20 @@ import Select from 'react-select';
 import { Badge } from '@/components/ui/badge';
 
 
-export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers }: { subjects: Subject[], faculties: Faculty[], allSubjects: Subject[], lecturers: Lecturer[] }) {
-  
+export function SubjectsClientPage({ subjects: initialSubjects, faculties, allSubjects, lecturers }: { subjects: Subject[], faculties: Faculty[], allSubjects: Subject[], lecturers: Lecturer[] }) {
+  const [subjects, setSubjects] = React.useState(initialSubjects);
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const [newSubjectId, setNewSubjectId] = React.useState('');
+  const [newSubjectName, setNewSubjectName] = React.useState('');
+  const [newSubjectCredits, setNewSubjectCredits] = React.useState<number | ''>('');
+  const [newSubjectFaculty, setNewSubjectFaculty] = React.useState<any>(null);
+  const [newSubjectType, setNewSubjectType] = React.useState<any>(null);
+  const [newSubjectPrerequisites, setNewSubjectPrerequisites] = React.useState<any[]>([]);
+  const [newSubjectLecturers, setNewSubjectLecturers] = React.useState<any[]>([]);
+
+  const [editingSubject, setEditingSubject] = React.useState<Subject | null>(null);
+
   const getFacultyName = (facultyId: string) => {
     return faculties.find(f => f.id === facultyId)?.name || facultyId;
   }
@@ -42,6 +54,16 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
   const getLecturerName = (lecturerId: string) => {
     return lecturers.find(l => l.id === lecturerId)?.name || lecturerId;
   }
+  
+  const handleSearch = () => {
+    const filteredSubjects = initialSubjects.filter(s =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      getFacultyName(s.facultyId).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.type.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setSubjects(filteredSubjects);
+  };
 
   const subjectOptions = allSubjects.map(s => ({ value: s.id, label: `${s.name} (${s.id})` }));
   const lecturerOptions = lecturers.map(l => ({ value: l.id, label: `${l.name} (${l.id})` }));
@@ -68,20 +90,22 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject-id" className="text-right">Mã môn học</Label>
-                <Input id="subject-id" className="col-span-3" />
+                <Input id="subject-id" value={newSubjectId} onChange={e => setNewSubjectId(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject-name" className="text-right">Tên môn học</Label>
-                <Input id="subject-name" className="col-span-3" />
+                <Input id="subject-name" value={newSubjectName} onChange={e => setNewSubjectName(e.target.value)} className="col-span-3" />
               </div>
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject-credits" className="text-right">Số tín chỉ</Label>
-                <Input id="subject-credits" type="number" className="col-span-3" />
+                <Input id="subject-credits" type="number" value={newSubjectCredits} onChange={e => setNewSubjectCredits(e.target.value === '' ? '' : Number(e.target.value))} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject-faculty" className="text-right">Khoa</Label>
                  <Select
                     options={facultyOptions}
+                    value={newSubjectFaculty}
+                    onChange={setNewSubjectFaculty}
                     className="col-span-3"
                     placeholder="Chọn khoa"
                  />
@@ -90,6 +114,8 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                 <Label htmlFor="subject-type" className="text-right">Loại môn</Label>
                  <Select
                     options={typeOptions}
+                    value={newSubjectType}
+                    onChange={setNewSubjectType}
                     className="col-span-3"
                     placeholder="Chọn loại môn"
                  />
@@ -99,6 +125,8 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                 <Select
                     isMulti
                     options={subjectOptions}
+                    value={newSubjectPrerequisites}
+                    onChange={setNewSubjectPrerequisites}
                     className="col-span-3"
                     placeholder="Chọn môn tiên quyết"
                 />
@@ -108,6 +136,8 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                 <Select
                     isMulti
                     options={lecturerOptions}
+                    value={newSubjectLecturers}
+                    onChange={setNewSubjectLecturers}
                     className="col-span-3"
                     placeholder="Chọn giảng viên"
                 />
@@ -126,10 +156,12 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
               <Input
               type="search"
               placeholder="Tìm kiếm môn học..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full appearance-none bg-background pl-8 shadow-none md:w-[280px]"
               />
           </div>
-          <Button>Tìm kiếm</Button>
+          <Button onClick={handleSearch}>Tìm kiếm</Button>
       </div>
 
       <Card>
@@ -184,7 +216,7 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DialogTrigger asChild>
-                              <DropdownMenuItem>Sửa</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setEditingSubject(subject)}>Sửa</DropdownMenuItem>
                             </DialogTrigger>
                             <DropdownMenuItem>Xem chi tiết</DropdownMenuItem>
                             <DropdownMenuSeparator />
@@ -215,18 +247,19 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                             Thay đổi thông tin chi tiết của môn học.
                           </DialogDescription>
                         </DialogHeader>
+                        {editingSubject && (
                         <div className="grid gap-4 py-4">
                            <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="subject-id-edit" className="text-right">Mã môn học</Label>
-                            <Input id="subject-id-edit" defaultValue={subject.id} className="col-span-3" readOnly/>
+                            <Input id="subject-id-edit" value={editingSubject.id} className="col-span-3" readOnly/>
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="subject-name-edit" className="text-right">Tên môn học</Label>
-                            <Input id="subject-name-edit" defaultValue={subject.name} className="col-span-3" />
+                            <Input id="subject-name-edit" value={editingSubject.name} onChange={e => setEditingSubject({...editingSubject, name: e.target.value})} className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="subject-credits-edit" className="text-right">Số tín chỉ</Label>
-                            <Input id="subject-credits-edit" type="number" defaultValue={subject.credits} className="col-span-3" />
+                            <Input id="subject-credits-edit" type="number" value={editingSubject.credits} onChange={e => setEditingSubject({...editingSubject, credits: Number(e.target.value)})} className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="subject-faculty-edit" className="text-right">Khoa</Label>
@@ -234,7 +267,8 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                                 options={facultyOptions}
                                 className="col-span-3"
                                 placeholder="Chọn khoa"
-                                defaultValue={facultyOptions.find(f => f.value === subject.facultyId)}
+                                value={facultyOptions.find(f => f.value === editingSubject.facultyId)}
+                                onChange={(option: any) => setEditingSubject({...editingSubject, facultyId: option.value})}
                             />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
@@ -243,7 +277,8 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                                 options={typeOptions}
                                 className="col-span-3"
                                 placeholder="Chọn loại môn"
-                                defaultValue={typeOptions.find(t => t.value === subject.type)}
+                                value={typeOptions.find(t => t.value === editingSubject.type)}
+                                onChange={(option: any) => setEditingSubject({...editingSubject, type: option.value})}
                             />
                           </div>
                           <div className="grid grid-cols-4 items-start gap-4">
@@ -253,7 +288,8 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                                 options={subjectOptions}
                                 className="col-span-3"
                                 placeholder="Chọn môn tiên quyết"
-                                defaultValue={subject.prerequisites.map(p => subjectOptions.find(s => s.value === p))}
+                                value={editingSubject.prerequisites.map(p => subjectOptions.find(s => s.value === p))}
+                                onChange={(options: any) => setEditingSubject({...editingSubject, prerequisites: options.map((o: any) => o.value)})}
                             />
                           </div>
                           <div className="grid grid-cols-4 items-start gap-4">
@@ -263,10 +299,12 @@ export function SubjectsClientPage({ subjects, faculties, allSubjects, lecturers
                                 options={lecturerOptions}
                                 className="col-span-3"
                                 placeholder="Chọn giảng viên"
-                                defaultValue={subject.lecturerIds.map(id => lecturerOptions.find(l => l.value === id))}
+                                value={editingSubject.lecturerIds.map(id => lecturerOptions.find(l => l.value === id))}
+                                onChange={(options: any) => setEditingSubject({...editingSubject, lecturerIds: options.map((o: any) => o.value)})}
                             />
                           </div>
                         </div>
+                        )}
                         <DialogFooter>
                           <Button type="submit">Lưu thay đổi</Button>
                         </DialogFooter>

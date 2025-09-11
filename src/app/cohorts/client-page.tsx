@@ -26,7 +26,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
-export function CohortsClientPage({ cohorts }: { cohorts: Cohort[] }) {
+export function CohortsClientPage({ cohorts: initialCohorts }: { cohorts: Cohort[] }) {
+  const [cohorts, setCohorts] = React.useState(initialCohorts);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [newCohortId, setNewCohortId] = React.useState('');
+  const [newCohortName, setNewCohortName] = React.useState('');
+  const [newCohortYear, setNewCohortYear] = React.useState<number | ''>('');
+  
+  const [editingCohort, setEditingCohort] = React.useState<Cohort | null>(null);
+
+  const handleSearch = () => {
+    const filteredCohorts = initialCohorts.filter(c =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setCohorts(filteredCohorts);
+  };
 
   return (
     <div className="space-y-8">
@@ -48,15 +63,15 @@ export function CohortsClientPage({ cohorts }: { cohorts: Cohort[] }) {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="cohort-id" className="text-right">Mã khóa học</Label>
-                <Input id="cohort-id" className="col-span-3" />
+                <Input id="cohort-id" value={newCohortId} onChange={e => setNewCohortId(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="cohort-name" className="text-right">Tên khóa học</Label>
-                <Input id="cohort-name" className="col-span-3" />
+                <Input id="cohort-name" value={newCohortName} onChange={e => setNewCohortName(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="cohort-year" className="text-right">Năm bắt đầu</Label>
-                <Input id="cohort-year" type="number" className="col-span-3" />
+                <Input id="cohort-year" type="number" value={newCohortYear} onChange={e => setNewCohortYear(e.target.value === '' ? '' : Number(e.target.value))} className="col-span-3" />
               </div>
             </div>
             <DialogFooter>
@@ -72,10 +87,12 @@ export function CohortsClientPage({ cohorts }: { cohorts: Cohort[] }) {
               <Input
               type="search"
               placeholder="Tìm kiếm khóa học..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full appearance-none bg-background pl-8 shadow-none md:w-[280px]"
               />
           </div>
-          <Button>Tìm kiếm</Button>
+          <Button onClick={handleSearch}>Tìm kiếm</Button>
       </div>
 
       <Card>
@@ -110,7 +127,7 @@ export function CohortsClientPage({ cohorts }: { cohorts: Cohort[] }) {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DialogTrigger asChild>
-                              <DropdownMenuItem>Sửa</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setEditingCohort(cohort)}>Sửa</DropdownMenuItem>
                             </DialogTrigger>
                             <DropdownMenuSeparator />
                             <AlertDialogTrigger asChild>
@@ -140,20 +157,22 @@ export function CohortsClientPage({ cohorts }: { cohorts: Cohort[] }) {
                             Thay đổi thông tin của khóa học.
                           </DialogDescription>
                         </DialogHeader>
+                        {editingCohort && (
                         <div className="grid gap-4 py-4">
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="cohort-id-edit" className="text-right">Mã khóa học</Label>
-                            <Input id="cohort-id-edit" defaultValue={cohort.id} className="col-span-3" />
+                            <Input id="cohort-id-edit" value={editingCohort.id} readOnly className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="cohort-name-edit" className="text-right">Tên khóa học</Label>
-                            <Input id="cohort-name-edit" defaultValue={cohort.name} className="col-span-3" />
+                            <Input id="cohort-name-edit" value={editingCohort.name} onChange={e => setEditingCohort({...editingCohort, name: e.target.value})} className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="cohort-year-edit" className="text-right">Năm bắt đầu</Label>
-                            <Input id="cohort-year-edit" type="number" defaultValue={cohort.startYear} className="col-span-3" />
+                            <Input id="cohort-year-edit" type="number" value={editingCohort.startYear} onChange={e => setEditingCohort({...editingCohort, startYear: Number(e.target.value)})} className="col-span-3" />
                           </div>
                         </div>
+                        )}
                         <DialogFooter>
                           <Button type="submit">Lưu thay đổi</Button>
                         </DialogFooter>

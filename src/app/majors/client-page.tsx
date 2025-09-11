@@ -27,11 +27,27 @@ import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-export function MajorsClientPage({ majors, faculties }: { majors: Major[], faculties: Faculty[] }) {
+export function MajorsClientPage({ majors: initialMajors, faculties }: { majors: Major[], faculties: Faculty[] }) {
+  const [majors, setMajors] = React.useState(initialMajors);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [newMajorId, setNewMajorId] = React.useState('');
+  const [newMajorName, setNewMajorName] = React.useState('');
+  const [newMajorFaculty, setNewMajorFaculty] = React.useState('');
   
+  const [editingMajor, setEditingMajor] = React.useState<Major | null>(null);
+
   const getFacultyName = (facultyId: string) => {
     return faculties.find(f => f.id === facultyId)?.name || facultyId;
   }
+
+  const handleSearch = () => {
+    const filteredMajors = initialMajors.filter(m =>
+      m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      getFacultyName(m.facultyId).toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setMajors(filteredMajors);
+  };
 
   return (
     <div className="space-y-8">
@@ -53,15 +69,15 @@ export function MajorsClientPage({ majors, faculties }: { majors: Major[], facul
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="major-id" className="text-right">Mã chuyên ngành</Label>
-                <Input id="major-id" className="col-span-3" />
+                <Input id="major-id" value={newMajorId} onChange={e => setNewMajorId(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="major-name" className="text-right">Tên chuyên ngành</Label>
-                <Input id="major-name" className="col-span-3" />
+                <Input id="major-name" value={newMajorName} onChange={e => setNewMajorName(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="major-faculty" className="text-right">Khoa</Label>
-                 <Select>
+                 <Select value={newMajorFaculty} onValueChange={setNewMajorFaculty}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Chọn khoa" />
                   </SelectTrigger>
@@ -84,10 +100,12 @@ export function MajorsClientPage({ majors, faculties }: { majors: Major[], facul
               <Input
               type="search"
               placeholder="Tìm kiếm chuyên ngành..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full appearance-none bg-background pl-8 shadow-none md:w-[280px]"
               />
           </div>
-          <Button>Tìm kiếm</Button>
+          <Button onClick={handleSearch}>Tìm kiếm</Button>
       </div>
 
       <Card>
@@ -122,7 +140,7 @@ export function MajorsClientPage({ majors, faculties }: { majors: Major[], facul
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DialogTrigger asChild>
-                              <DropdownMenuItem>Sửa</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setEditingMajor(major)}>Sửa</DropdownMenuItem>
                             </DialogTrigger>
                             <DropdownMenuSeparator />
                             <AlertDialogTrigger asChild>
@@ -152,18 +170,19 @@ export function MajorsClientPage({ majors, faculties }: { majors: Major[], facul
                            Thay đổi thông tin chi tiết của chuyên ngành.
                           </DialogDescription>
                         </DialogHeader>
+                        {editingMajor && (
                         <div className="grid gap-4 py-4">
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="major-id-edit" className="text-right">Mã chuyên ngành</Label>
-                            <Input id="major-id-edit" defaultValue={major.id} className="col-span-3" />
+                            <Input id="major-id-edit" value={editingMajor.id} readOnly className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="major-name-edit" className="text-right">Tên chuyên ngành</Label>
-                            <Input id="major-name-edit" defaultValue={major.name} className="col-span-3" />
+                            <Input id="major-name-edit" value={editingMajor.name} onChange={e => setEditingMajor({...editingMajor, name: e.target.value})} className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="major-faculty-edit" className="text-right">Khoa</Label>
-                            <Select defaultValue={major.facultyId}>
+                            <Select value={editingMajor.facultyId} onValueChange={value => setEditingMajor({...editingMajor, facultyId: value})}>
                               <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Chọn khoa" />
                               </SelectTrigger>
@@ -173,6 +192,7 @@ export function MajorsClientPage({ majors, faculties }: { majors: Major[], facul
                             </Select>
                           </div>
                         </div>
+                        )}
                         <DialogFooter>
                           <Button type="submit">Lưu thay đổi</Button>
                         </DialogFooter>

@@ -26,7 +26,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
-export function FacultiesClientPage({ faculties }: { faculties: Faculty[] }) {
+export function FacultiesClientPage({ faculties: initialFaculties }: { faculties: Faculty[] }) {
+  const [faculties, setFaculties] = React.useState(initialFaculties);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [newFacultyId, setNewFacultyId] = React.useState('');
+  const [newFacultyName, setNewFacultyName] = React.useState('');
+
+  const [editingFaculty, setEditingFaculty] = React.useState<Faculty | null>(null);
+
+  const handleSearch = () => {
+    const filteredFaculties = initialFaculties.filter(f => 
+        f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        f.id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFaculties(filteredFaculties);
+  };
 
   return (
     <div className="space-y-8">
@@ -48,11 +62,11 @@ export function FacultiesClientPage({ faculties }: { faculties: Faculty[] }) {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="faculty-id" className="text-right">Mã khoa</Label>
-                <Input id="faculty-id" className="col-span-3" />
+                <Input id="faculty-id" value={newFacultyId} onChange={e => setNewFacultyId(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="faculty-name" className="text-right">Tên khoa</Label>
-                <Input id="faculty-name" className="col-span-3" />
+                <Input id="faculty-name" value={newFacultyName} onChange={e => setNewFacultyName(e.target.value)} className="col-span-3" />
               </div>
             </div>
             <DialogFooter>
@@ -68,10 +82,12 @@ export function FacultiesClientPage({ faculties }: { faculties: Faculty[] }) {
               <Input
               type="search"
               placeholder="Tìm kiếm khoa..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full appearance-none bg-background pl-8 shadow-none md:w-[280px]"
               />
           </div>
-          <Button>Tìm kiếm</Button>
+          <Button onClick={handleSearch}>Tìm kiếm</Button>
       </div>
 
       <Card>
@@ -104,7 +120,7 @@ export function FacultiesClientPage({ faculties }: { faculties: Faculty[] }) {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                              <DialogTrigger asChild>
-                                <DropdownMenuItem>Sửa</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setEditingFaculty(faculty)}>Sửa</DropdownMenuItem>
                             </DialogTrigger>
                             <DropdownMenuSeparator />
                             <AlertDialogTrigger asChild>
@@ -134,16 +150,18 @@ export function FacultiesClientPage({ faculties }: { faculties: Faculty[] }) {
                             Thay đổi thông tin của khoa.
                           </DialogDescription>
                         </DialogHeader>
+                        {editingFaculty && (
                         <div className="grid gap-4 py-4">
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="faculty-id-edit" className="text-right">Mã khoa</Label>
-                            <Input id="faculty-id-edit" defaultValue={faculty.id} className="col-span-3" />
+                            <Input id="faculty-id-edit" value={editingFaculty.id} readOnly className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="faculty-name-edit" className="text-right">Tên khoa</Label>
-                            <Input id="faculty-name-edit" defaultValue={faculty.name} className="col-span-3" />
+                            <Input id="faculty-name-edit" value={editingFaculty.name} onChange={e => setEditingFaculty({...editingFaculty, name: e.target.value})} className="col-span-3" />
                           </div>
                         </div>
+                        )}
                         <DialogFooter>
                           <Button type="submit">Lưu thay đổi</Button>
                         </DialogFooter>

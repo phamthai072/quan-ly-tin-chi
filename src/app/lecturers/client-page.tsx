@@ -29,7 +29,23 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 const faculties = ["Công nghệ thông tin", "An toàn thông tin", "Viễn thông", "Điện tử"];
 
-export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
+export function LecturersClientPage({ lecturers: initialLecturers }: { lecturers: Lecturer[] }) {
+  const [lecturers, setLecturers] = React.useState(initialLecturers);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [newLecturerName, setNewLecturerName] = React.useState('');
+  const [newLecturerFaculty, setNewLecturerFaculty] = React.useState('');
+  const [newLecturerUnitPrice, setNewLecturerUnitPrice] = React.useState<number | ''>('');
+
+  const [editingLecturer, setEditingLecturer] = React.useState<Lecturer | null>(null);
+  
+  const handleSearch = () => {
+    const filteredLecturers = initialLecturers.filter(l => 
+        l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        l.faculty.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setLecturers(filteredLecturers);
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
   }
@@ -54,11 +70,11 @@ export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="lecturer-name" className="text-right">Họ và tên</Label>
-                <Input id="lecturer-name" className="col-span-3" />
+                <Input id="lecturer-name" value={newLecturerName} onChange={(e) => setNewLecturerName(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="lecturer-faculty" className="text-right">Khoa</Label>
-                 <Select>
+                 <Select onValueChange={setNewLecturerFaculty} value={newLecturerFaculty}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Chọn khoa" />
                   </SelectTrigger>
@@ -69,7 +85,7 @@ export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="lecturer-unit-price" className="text-right">Đơn giá</Label>
-                <Input id="lecturer-unit-price" type="number" className="col-span-3" />
+                <Input id="lecturer-unit-price" type="number" value={newLecturerUnitPrice} onChange={(e) => setNewLecturerUnitPrice(e.target.value === '' ? '' : Number(e.target.value))} className="col-span-3" />
               </div>
             </div>
             <DialogFooter>
@@ -85,10 +101,12 @@ export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
               <Input
               type="search"
               placeholder="Tìm kiếm giảng viên..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full appearance-none bg-background pl-8 shadow-none md:w-[280px]"
               />
           </div>
-          <Button>Tìm kiếm</Button>
+          <Button onClick={handleSearch}>Tìm kiếm</Button>
       </div>
 
       <Card>
@@ -125,7 +143,7 @@ export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DialogTrigger asChild>
-                              <DropdownMenuItem>Sửa</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setEditingLecturer(lecturer)}>Sửa</DropdownMenuItem>
                             </DialogTrigger>
                             <DropdownMenuSeparator />
                             <AlertDialogTrigger asChild>
@@ -155,18 +173,19 @@ export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
                             Thay đổi thông tin chi tiết của giảng viên.
                           </DialogDescription>
                         </DialogHeader>
+                        {editingLecturer && (
                         <div className="grid gap-4 py-4">
                            <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="lecturer-id-edit" className="text-right">Mã GV</Label>
-                            <Input id="lecturer-id-edit" defaultValue={lecturer.id} className="col-span-3" readOnly />
+                            <Input id="lecturer-id-edit" value={editingLecturer.id} className="col-span-3" readOnly />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="lecturer-name-edit" className="text-right">Họ và tên</Label>
-                            <Input id="lecturer-name-edit" defaultValue={lecturer.name} className="col-span-3" />
+                            <Input id="lecturer-name-edit" value={editingLecturer.name} onChange={(e) => setEditingLecturer({...editingLecturer, name: e.target.value})} className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="lecturer-faculty-edit" className="text-right">Khoa</Label>
-                            <Select defaultValue={lecturer.faculty}>
+                            <Select value={editingLecturer.faculty} onValueChange={(value) => setEditingLecturer({...editingLecturer, faculty: value})}>
                               <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Chọn khoa" />
                               </SelectTrigger>
@@ -177,9 +196,10 @@ export function LecturersClientPage({ lecturers }: { lecturers: Lecturer[] }) {
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="lecturer-unit-price-edit" className="text-right">Đơn giá</Label>
-                            <Input id="lecturer-unit-price-edit" type="number" defaultValue={lecturer.unitPrice} className="col-span-3" />
+                            <Input id="lecturer-unit-price-edit" type="number" value={editingLecturer.unitPrice} onChange={(e) => setEditingLecturer({...editingLecturer, unitPrice: Number(e.target.value)})} className="col-span-3" />
                           </div>
                         </div>
+                        )}
                         <DialogFooter>
                           <Button type="submit">Lưu thay đổi</Button>
                         </DialogFooter>

@@ -30,9 +30,26 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 
-export function SemestersClientPage({ semesters }: { semesters: Semester[] }) {
-  const [startDate, setStartDate] = React.useState<Date>();
-  const [endDate, setEndDate] = React.useState<Date>();
+export function SemestersClientPage({ semesters: initialSemesters }: { semesters: Semester[] }) {
+  const [semesters, setSemesters] = React.useState(initialSemesters);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  
+  const [newSemesterId, setNewSemesterId] = React.useState('');
+  const [newSemesterName, setNewSemesterName] = React.useState('');
+  const [newSemesterSchoolYear, setNewSemesterSchoolYear] = React.useState('');
+  const [newSemesterStartDate, setNewSemesterStartDate] = React.useState<Date | undefined>();
+  const [newSemesterEndDate, setNewSemesterEndDate] = React.useState<Date | undefined>();
+
+  const [editingSemester, setEditingSemester] = React.useState<Semester | null>(null);
+
+  const handleSearch = () => {
+    const filteredSemesters = initialSemesters.filter(s =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.schoolYear.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setSemesters(filteredSemesters);
+  };
 
   const formatDate = (date: Date) => {
     return format(date, 'dd/MM/yyyy');
@@ -58,15 +75,15 @@ export function SemestersClientPage({ semesters }: { semesters: Semester[] }) {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="semester-id" className="text-right">Mã học kỳ</Label>
-                <Input id="semester-id" className="col-span-3" />
+                <Input id="semester-id" value={newSemesterId} onChange={e => setNewSemesterId(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="semester-name" className="text-right">Tên học kỳ</Label>
-                <Input id="semester-name" className="col-span-3" />
+                <Input id="semester-name" value={newSemesterName} onChange={e => setNewSemesterName(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="semester-year" className="text-right">Năm học</Label>
-                <Input id="semester-year" className="col-span-3" />
+                <Input id="semester-year" value={newSemesterSchoolYear} onChange={e => setNewSemesterSchoolYear(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="start-date" className="text-right">Ngày bắt đầu</Label>
@@ -76,18 +93,18 @@ export function SemestersClientPage({ semesters }: { semesters: Semester[] }) {
                         variant={"outline"}
                         className={cn(
                             "col-span-3 justify-start text-left font-normal",
-                            !startDate && "text-muted-foreground"
+                            !newSemesterStartDate && "text-muted-foreground"
                         )}
                         >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {startDate ? format(startDate, "PPP") : <span>Chọn ngày</span>}
+                        {newSemesterStartDate ? format(newSemesterStartDate, "PPP") : <span>Chọn ngày</span>}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                         <Calendar
                         mode="single"
-                        selected={startDate}
-                        onSelect={setStartDate}
+                        selected={newSemesterStartDate}
+                        onSelect={setNewSemesterStartDate}
                         initialFocus
                         />
                     </PopoverContent>
@@ -101,18 +118,18 @@ export function SemestersClientPage({ semesters }: { semesters: Semester[] }) {
                         variant={"outline"}
                         className={cn(
                             "col-span-3 justify-start text-left font-normal",
-                            !endDate && "text-muted-foreground"
+                            !newSemesterEndDate && "text-muted-foreground"
                         )}
                         >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {endDate ? format(endDate, "PPP") : <span>Chọn ngày</span>}
+                        {newSemesterEndDate ? format(newSemesterEndDate, "PPP") : <span>Chọn ngày</span>}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                         <Calendar
                         mode="single"
-                        selected={endDate}
-                        onSelect={setEndDate}
+                        selected={newSemesterEndDate}
+                        onSelect={setNewSemesterEndDate}
                         initialFocus
                         />
                     </PopoverContent>
@@ -132,10 +149,12 @@ export function SemestersClientPage({ semesters }: { semesters: Semester[] }) {
               <Input
               type="search"
               placeholder="Tìm kiếm học kỳ..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full appearance-none bg-background pl-8 shadow-none md:w-[280px]"
               />
           </div>
-          <Button>Tìm kiếm</Button>
+          <Button onClick={handleSearch}>Tìm kiếm</Button>
       </div>
 
       <Card>
@@ -174,7 +193,7 @@ export function SemestersClientPage({ semesters }: { semesters: Semester[] }) {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DialogTrigger asChild>
-                              <DropdownMenuItem>Sửa</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setEditingSemester({...semester})}>Sửa</DropdownMenuItem>
                             </DialogTrigger>
                             <DropdownMenuSeparator />
                             <AlertDialogTrigger asChild>
@@ -204,18 +223,19 @@ export function SemestersClientPage({ semesters }: { semesters: Semester[] }) {
                            Thay đổi thông tin chi tiết của học kỳ.
                           </DialogDescription>
                         </DialogHeader>
+                        {editingSemester && (
                         <div className="grid gap-4 py-4">
                            <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="semester-id-edit" className="text-right">Mã học kỳ</Label>
-                            <Input id="semester-id-edit" defaultValue={semester.id} className="col-span-3" />
+                            <Input id="semester-id-edit" value={editingSemester.id} readOnly className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="semester-name-edit" className="text-right">Tên học kỳ</Label>
-                            <Input id="semester-name-edit" defaultValue={semester.name} className="col-span-3" />
+                            <Input id="semester-name-edit" value={editingSemester.name} onChange={e => setEditingSemester({...editingSemester, name: e.target.value})} className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="semester-year-edit" className="text-right">Năm học</Label>
-                            <Input id="semester-year-edit" defaultValue={semester.schoolYear} className="col-span-3" />
+                            <Input id="semester-year-edit" value={editingSemester.schoolYear} onChange={e => setEditingSemester({...editingSemester, schoolYear: e.target.value})} className="col-span-3" />
                           </div>
                            <div className="grid grid-cols-4 items-center gap-4">
                             <Label className="text-right">Ngày bắt đầu</Label>
@@ -225,18 +245,18 @@ export function SemestersClientPage({ semesters }: { semesters: Semester[] }) {
                                     variant={"outline"}
                                     className={cn(
                                         "col-span-3 justify-start text-left font-normal",
-                                        !semester.startDate && "text-muted-foreground"
+                                        !editingSemester.startDate && "text-muted-foreground"
                                     )}
                                     >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {semester.startDate ? format(semester.startDate, "PPP") : <span>Chọn ngày</span>}
+                                    {editingSemester.startDate ? format(editingSemester.startDate, "PPP") : <span>Chọn ngày</span>}
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0">
                                     <Calendar
                                     mode="single"
-                                    selected={semester.startDate}
-                                    onSelect={(day) => {}}
+                                    selected={editingSemester.startDate}
+                                    onSelect={(day) => setEditingSemester({...editingSemester, startDate: day as Date})}
                                     initialFocus
                                     />
                                 </PopoverContent>
@@ -250,24 +270,25 @@ export function SemestersClientPage({ semesters }: { semesters: Semester[] }) {
                                     variant={"outline"}
                                     className={cn(
                                         "col-span-3 justify-start text-left font-normal",
-                                        !semester.endDate && "text-muted-foreground"
+                                        !editingSemester.endDate && "text-muted-foreground"
                                     )}
                                     >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {semester.endDate ? format(semester.endDate, "PPP") : <span>Chọn ngày</span>}
+                                    {editingSemester.endDate ? format(editingSemester.endDate, "PPP") : <span>Chọn ngày</span>}
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0">
                                     <Calendar
                                     mode="single"
-                                    selected={semester.endDate}
-                                     onSelect={(day) => {}}
+                                    selected={editingSemester.endDate}
+                                     onSelect={(day) => setEditingSemester({...editingSemester, endDate: day as Date})}
                                     initialFocus
                                     />
                                 </PopoverContent>
                             </Popover>
                           </div>
                         </div>
+                        )}
                         <DialogFooter>
                           <Button type="submit">Lưu thay đổi</Button>
                         </DialogFooter>

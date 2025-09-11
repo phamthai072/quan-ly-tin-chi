@@ -26,8 +26,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
-export function ClassroomsClientPage({ classrooms }: { classrooms: Classroom[] }) {
+export function ClassroomsClientPage({ classrooms: initialClassrooms }: { classrooms: Classroom[] }) {
+  const [classrooms, setClassrooms] = React.useState(initialClassrooms);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [newClassroomId, setNewClassroomId] = React.useState('');
+  const [newClassroomName, setNewClassroomName] = React.useState('');
+  const [newClassroomCapacity, setNewClassroomCapacity] = React.useState<number | ''>('');
 
+  const [editingClassroom, setEditingClassroom] = React.useState<Classroom | null>(null);
+
+
+  const handleSearch = () => {
+    const filteredClassrooms = initialClassrooms.filter(c => 
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setClassrooms(filteredClassrooms);
+  };
+  
   return (
     <div className="space-y-8">
        <div className="flex justify-between items-center">
@@ -48,15 +64,15 @@ export function ClassroomsClientPage({ classrooms }: { classrooms: Classroom[] }
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="classroom-id" className="text-right">Mã phòng</Label>
-                <Input id="classroom-id" className="col-span-3" />
+                <Input id="classroom-id" value={newClassroomId} onChange={(e) => setNewClassroomId(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="classroom-name" className="text-right">Tên phòng</Label>
-                <Input id="classroom-name" className="col-span-3" />
+                <Input id="classroom-name" value={newClassroomName} onChange={(e) => setNewClassroomName(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="classroom-capacity" className="text-right">Sức chứa</Label>
-                <Input id="classroom-capacity" type="number" className="col-span-3" />
+                <Input id="classroom-capacity" type="number" value={newClassroomCapacity} onChange={(e) => setNewClassroomCapacity(e.target.value === '' ? '' : Number(e.target.value))} className="col-span-3" />
               </div>
             </div>
             <DialogFooter>
@@ -72,10 +88,12 @@ export function ClassroomsClientPage({ classrooms }: { classrooms: Classroom[] }
               <Input
               type="search"
               placeholder="Tìm kiếm phòng học..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full appearance-none bg-background pl-8 shadow-none md:w-[280px]"
               />
           </div>
-          <Button>Tìm kiếm</Button>
+          <Button onClick={handleSearch}>Tìm kiếm</Button>
       </div>
 
       <Card>
@@ -110,7 +128,7 @@ export function ClassroomsClientPage({ classrooms }: { classrooms: Classroom[] }
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DialogTrigger asChild>
-                              <DropdownMenuItem>Sửa</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setEditingClassroom(classroom)}>Sửa</DropdownMenuItem>
                             </DialogTrigger>
                             <DropdownMenuSeparator />
                             <AlertDialogTrigger asChild>
@@ -140,20 +158,22 @@ export function ClassroomsClientPage({ classrooms }: { classrooms: Classroom[] }
                             Thay đổi thông tin của phòng học.
                           </DialogDescription>
                         </DialogHeader>
+                        {editingClassroom && (
                         <div className="grid gap-4 py-4">
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="classroom-id-edit" className="text-right">Mã phòng</Label>
-                            <Input id="classroom-id-edit" defaultValue={classroom.id} className="col-span-3" />
+                            <Input id="classroom-id-edit" value={editingClassroom.id} readOnly className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="classroom-name-edit" className="text-right">Tên phòng</Label>
-                            <Input id="classroom-name-edit" defaultValue={classroom.name} className="col-span-3" />
+                            <Input id="classroom-name-edit" value={editingClassroom.name} onChange={(e) => setEditingClassroom({...editingClassroom, name: e.target.value})} className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="classroom-capacity-edit" className="text-right">Sức chứa</Label>
-                            <Input id="classroom-capacity-edit" type="number" defaultValue={classroom.capacity} className="col-span-3" />
+                            <Input id="classroom-capacity-edit" type="number" value={editingClassroom.capacity} onChange={(e) => setEditingClassroom({...editingClassroom, capacity: Number(e.target.value)})} className="col-span-3" />
                           </div>
                         </div>
+                        )}
                         <DialogFooter>
                           <Button type="submit">Lưu thay đổi</Button>
                         </DialogFooter>
