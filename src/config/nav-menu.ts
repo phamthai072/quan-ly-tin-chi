@@ -29,6 +29,10 @@ export const navMenuItems: NavMenuItem[] = [
               href: '/dashboard',
           },
           {
+              title: 'Phân tích',
+              href: '/analytics/room-utilization',
+          },
+          {
               title: 'Khoa',
               href: '/faculties',
           },
@@ -60,13 +64,10 @@ export const navMenuItems: NavMenuItem[] = [
               title: 'Lịch học',
               href: '/schedules',
           },
-          
          
       ]
   },
-
   {
-
       title: "Giảng viên",
       icon: BookUser,
       children: [
@@ -84,7 +85,6 @@ export const navMenuItems: NavMenuItem[] = [
           },
       ]
   },
-
   {
       title: "Sinh viên",
       icon: Users,
@@ -107,6 +107,4 @@ export const navMenuItems: NavMenuItem[] = [
           },
       ]
   },
-
-
 ];
