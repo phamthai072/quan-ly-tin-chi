@@ -42,7 +42,7 @@ export function CourseRegistrationClientPage({
 }: CourseRegistrationClientPageProps) {
   const [sections, setSections] = React.useState(initialSections);
   const [selectedSemester, setSelectedSemester] = React.useState(semesters[0]?.id || '');
-  const [selectedFaculty, setSelectedFaculty] = React.useState('');
+  const [selectedFaculty, setSelectedFaculty] = React.useState('all');
   const [selectedSections, setSelectedSections] = React.useState<Set<string>>(new Set());
 
   const handleFilter = () => {
@@ -50,7 +50,7 @@ export function CourseRegistrationClientPage({
     if (selectedSemester) {
         filtered = filtered.filter(s => s.semesterId === selectedSemester);
     }
-    if (selectedFaculty) {
+    if (selectedFaculty && selectedFaculty !== 'all') {
         filtered = filtered.filter(s => s.facultyId === selectedFaculty);
     }
     setSections(filtered);
@@ -113,7 +113,7 @@ export function CourseRegistrationClientPage({
                         <SelectValue placeholder="Tất cả các khoa" />
                     </SelectTrigger>
                     <SelectContent>
-                         <SelectItem value="">Tất cả các khoa</SelectItem>
+                         <SelectItem value="all">Tất cả các khoa</SelectItem>
                         {faculties.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
                     </SelectContent>
                 </Select>
