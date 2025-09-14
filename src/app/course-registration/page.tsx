@@ -1,30 +1,29 @@
-import { mockSubjects, mockSemesters, mockFaculties, mockLecturers, mockStudents } from '@/lib/mock-data';
+import { mockSubjects, mockSemesters, mockFaculties, mockLecturers, mockStudents, mockCourseSections } from '@/lib/mock-data';
 import { CourseRegistrationClientPage } from './client-page';
 
 export default function CourseRegistrationPage() {
-  const subjects = mockSubjects;
   const semesters = mockSemesters;
   const faculties = mockFaculties;
-  const lecturers = mockLecturers;
   const students = mockStudents;
+  const courseSections = mockCourseSections;
 
-  // In a real app, you would probably fetch available course sections instead of all subjects
-  const courseSections = subjects.map(subject => ({
-      id: `${subject.id}-01`,
-      subjectId: subject.id,
-      subjectName: subject.name,
-      credits: subject.credits,
-      maxStudents: 100,
-      currentStudents: Math.floor(Math.random() * 100),
-      lecturerName: lecturers.find(l => subject.lecturerIds.includes(l.id))?.name || 'N/A',
-      schedule: 'Thứ 2, Tiết 1-3, P.301-A2',
-      facultyId: subject.facultyId,
-      semesterId: semesters[0].id, // Assume all are for the first semester for now
-  }));
+  const sectionsWithDetails = courseSections.map(section => {
+    const subject = mockSubjects.find(s => s.id === section.subjectId);
+    const lecturer = mockLecturers.find(l => l.id === section.lecturerId);
+    return {
+      ...section,
+      subjectName: subject?.name || 'N/A',
+      credits: subject?.credits || 0,
+      currentStudents: Math.floor(Math.random() * section.maxStudents),
+      lecturerName: lecturer?.name || 'N/A',
+      facultyId: subject?.facultyId || 'N/A',
+    }
+  });
+
 
   return (
     <CourseRegistrationClientPage 
-      sections={courseSections} 
+      sections={sectionsWithDetails} 
       semesters={semesters}
       faculties={faculties}
       students={students}

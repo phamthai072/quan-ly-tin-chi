@@ -9,6 +9,7 @@ import {
   Presentation,
   School,
   Users,
+  Wallet,
 } from 'lucide-react';
 
 export type NavMenuItem = {
@@ -21,90 +22,94 @@ export type NavMenuItem = {
 
 export const navMenuItems: NavMenuItem[] = [
   {
-      title: "Quản trị viên",
+      title: "Hệ thống",
       icon: School,
-      children: [
-          {
-              title: 'Tổng quan',
-              href: '/dashboard',
-          },
-          {
-              title: 'Phân tích',
-              href: '/analytics/room-utilization',
-          },
-          {
-              title: 'Khoa',
-              href: '/faculties',
-          },
-          {
-              title: 'Chuyên ngành',
-              href: '/majors',
-          },
-          {
-              title: 'Khóa học',
-              href: '/cohorts',
-          },
-          {
-              title: 'Môn học',
-              href: '/subjects',
-          },
-          {
-              title: 'Học kỳ',
-              href: '/semesters',
-          },
-          {
-              title: 'Lớp học phần',
-              href: '/course-sections',
-          },
-          {
-              title: 'Phòng học',
-              href: '/classrooms',
-          },
-          {
-              title: 'Lịch học',
-              href: '/schedules',
-          },
-         
-      ]
+      isHeader: true,
+  },
+  {
+      title: 'Tổng quan',
+      href: '/dashboard',
+      icon: LayoutDashboard,
+  },
+  {
+      title: 'Phân tích',
+      href: '/analytics/room-utilization',
+      icon: BarChart3,
+  },
+  {
+      title: 'Khoa',
+      href: '/faculties',
+      icon: BookCopy,
+  },
+  {
+      title: 'Chuyên ngành',
+      href: '/majors',
+      icon: BookCopy,
+  },
+  {
+      title: 'Khóa học',
+      href: '/cohorts',
+      icon: GraduationCap,
+  },
+  {
+      title: 'Môn học',
+      href: '/subjects',
+      icon: BookCopy,
+  },
+  {
+      title: 'Học kỳ',
+      href: '/semesters',
+      icon: CalendarClock,
+  },
+  {
+      title: 'Lớp học phần',
+      href: '/course-sections',
+      icon: Presentation,
+  },
+  {
+      title: 'Phòng học',
+      href: '/classrooms',
+      icon: School,
+  },
+  {
+      title: 'Lịch học',
+      href: '/schedules',
+      icon: CalendarClock,
   },
   {
       title: "Giảng viên",
       icon: BookUser,
-      children: [
-          {
-              title: 'Giảng viên',
-              href: '/lecturers',
-          },
-          {
-              title: 'Lớp học phần',
-              href: '/course-sections', // Filtered to their classes
-          },
-          {
-              title: 'Lịch dạy',
-              href: '/schedules', // Filtered to their schedule
-          },
-      ]
+      isHeader: true,
+  },
+  {
+      title: 'Danh sách',
+      href: '/lecturers',
+      icon: BookUser,
+  },
+  {
+    title: 'Lương giảng viên',
+    href: '/lecturer-salary',
+    icon: Wallet,
   },
   {
       title: "Sinh viên",
       icon: Users,
-      children: [
-          {
-              title: 'Sinh viên',
-              href: '/students',
-          },
-          {
-              title: 'Kết quả học tập',
-              href: '/results',
-          },
-          {
-              title: 'Lịch học',
-              href: '/schedules',
-          },
-          {
-              title: 'Đăng ký tín chỉ',
-              href: '/course-registration',
-          },
-      ]
+      isHeader: true,
+  },
+  {
+      title: 'Danh sách',
+      href: '/students',
+      icon: Users,
+
+  },
+  {
+      title: 'Kết quả học tập',
+      href: '/results',
+      icon: FileText,
+  },
+  {
+      title: 'Đăng ký tín chỉ',
+      href: '/course-registration',
+      icon: BookCopy,
   },
 ];

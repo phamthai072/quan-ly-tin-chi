@@ -36,6 +36,8 @@ export function SubjectsClientPage({ subjects: initialSubjects, faculties, allSu
   const [newSubjectId, setNewSubjectId] = React.useState('');
   const [newSubjectName, setNewSubjectName] = React.useState('');
   const [newSubjectCredits, setNewSubjectCredits] = React.useState<number | ''>('');
+  const [newSubjectTheory, setNewSubjectTheory] = React.useState<number | ''>('');
+  const [newSubjectPractice, setNewSubjectPractice] = React.useState<number | ''>('');
   const [newSubjectFaculty, setNewSubjectFaculty] = React.useState<any>(null);
   const [newSubjectType, setNewSubjectType] = React.useState<any>(null);
   const [newSubjectPrerequisites, setNewSubjectPrerequisites] = React.useState<any[]>([]);
@@ -99,6 +101,14 @@ export function SubjectsClientPage({ subjects: initialSubjects, faculties, allSu
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject-credits" className="text-right">Số tín chỉ</Label>
                 <Input id="subject-credits" type="number" value={newSubjectCredits} onChange={e => setNewSubjectCredits(e.target.value === '' ? '' : Number(e.target.value))} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="subject-theory" className="text-right">Số tiết LT</Label>
+                <Input id="subject-theory" type="number" value={newSubjectTheory} onChange={e => setNewSubjectTheory(e.target.value === '' ? '' : Number(e.target.value))} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="subject-practice" className="text-right">Số tiết TH</Label>
+                <Input id="subject-practice" type="number" value={newSubjectPractice} onChange={e => setNewSubjectPractice(e.target.value === '' ? '' : Number(e.target.value))} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="subject-faculty" className="text-right">Khoa</Label>
@@ -172,6 +182,7 @@ export function SubjectsClientPage({ subjects: initialSubjects, faculties, allSu
                 <TableHead>Mã môn học</TableHead>
                 <TableHead>Tên môn học</TableHead>
                 <TableHead>Số TC</TableHead>
+                <TableHead>Số tiết</TableHead>
                 <TableHead>Khoa</TableHead>
                 <TableHead>Loại</TableHead>
                 <TableHead>Môn tiên quyết</TableHead>
@@ -187,6 +198,7 @@ export function SubjectsClientPage({ subjects: initialSubjects, faculties, allSu
                   <TableCell className="font-medium">{subject.id}</TableCell>
                   <TableCell>{subject.name}</TableCell>
                   <TableCell>{subject.credits}</TableCell>
+                  <TableCell>LT: {subject.theoryPeriods} <br /> TH: {subject.practicePeriods}</TableCell>
                   <TableCell>{getFacultyName(subject.facultyId)}</TableCell>
                   <TableCell>
                       <Badge variant={subject.type === 'chuyên ngành' ? 'default' : 'secondary'}>
@@ -260,6 +272,14 @@ export function SubjectsClientPage({ subjects: initialSubjects, faculties, allSu
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="subject-credits-edit" className="text-right">Số tín chỉ</Label>
                             <Input id="subject-credits-edit" type="number" value={editingSubject.credits} onChange={e => setEditingSubject({...editingSubject, credits: Number(e.target.value)})} className="col-span-3" />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="subject-theory-edit" className="text-right">Số tiết LT</Label>
+                            <Input id="subject-theory-edit" type="number" value={editingSubject.theoryPeriods} onChange={e => setEditingSubject({...editingSubject, theoryPeriods: Number(e.target.value)})} className="col-span-3" />
+                          </div>
+                           <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="subject-practice-edit" className="text-right">Số tiết TH</Label>
+                            <Input id="subject-practice-edit" type="number" value={editingSubject.practicePeriods} onChange={e => setEditingSubject({...editingSubject, practicePeriods: Number(e.target.value)})} className="col-span-3" />
                           </div>
                           <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="subject-faculty-edit" className="text-right">Khoa</Label>

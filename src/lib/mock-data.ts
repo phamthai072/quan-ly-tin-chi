@@ -49,13 +49,23 @@ export type Semester = {
 export type Subject = {
     id: string;
     name: string;
-    credits: number;
+    credits: number; // số tín chỉ
+    theoryPeriods: number; // số tiết lý thuyết
+    practicePeriods: number; // số tiết thực hành
     facultyId: string;
     type: 'cơ bản' | 'chuyên ngành';
     prerequisites: string[];
     lecturerIds: string[];
 }
 
+export type CourseSection = {
+  id: string;
+  subjectId: string;
+  lecturerId: string;
+  semesterId: string;
+  maxStudents: number;
+  schedule: string;
+};
 
 export const mockStudents: Student[] = [
   { id: 'B20DCCN001', name: 'Nguyễn Văn An', class: 'D20CNPM1', major: 'Công nghệ phần mềm', program: 'Đại trà', gpa: 3.8, failedCourses: 0 },
@@ -136,10 +146,25 @@ export const mockRoomUtilization = [
 ];
 
 export const mockSubjects: Subject[] = [
-    { id: 'BAS101', name: 'Toán cao cấp 1', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [], lecturerIds: ['GV001'] },
-    { id: 'BAS102', name: 'Vật lý 1', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [], lecturerIds: ['GV004'] },
-    { id: 'INT101', name: 'Nhập môn lập trình', credits: 3, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [], lecturerIds: ['GV001', 'GV002'] },
-    { id: 'INT201', name: 'Cấu trúc dữ liệu và giải thuật', credits: 4, facultyId: 'CNTT', type: 'chuyên ngành', prerequisites: ['INT101'], lecturerIds: ['GV001'] },
-    { id: 'INT301', name: 'Cơ sở dữ liệu', credits: 3, facultyId: 'CNTT', type: 'chuyên ngành', prerequisites: ['INT201'], lecturerIds: ['GV002'] },
-    { id: 'NET201', name: 'Mạng máy tính', credits: 3, facultyId: 'ATTT', type: 'chuyên ngành', prerequisites: ['INT101'], lecturerIds: ['GV003'] },
+    { id: 'BAS101', name: 'Toán cao cấp 1', credits: 3, theoryPeriods: 45, practicePeriods: 0, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [], lecturerIds: ['GV001'] },
+    { id: 'BAS102', name: 'Vật lý 1', credits: 3, theoryPeriods: 30, practicePeriods: 15, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [], lecturerIds: ['GV004'] },
+    { id: 'INT101', name: 'Nhập môn lập trình', credits: 3, theoryPeriods: 30, practicePeriods: 30, facultyId: 'CNTT', type: 'cơ bản', prerequisites: [], lecturerIds: ['GV001', 'GV002'] },
+    { id: 'INT201', name: 'Cấu trúc dữ liệu và giải thuật', credits: 4, theoryPeriods: 45, practicePeriods: 30, facultyId: 'CNTT', type: 'chuyên ngành', prerequisites: ['INT101'], lecturerIds: ['GV001'] },
+    { id: 'INT301', name: 'Cơ sở dữ liệu', credits: 3, theoryPeriods: 30, practicePeriods: 15, facultyId: 'CNTT', type: 'chuyên ngành', prerequisites: ['INT201'], lecturerIds: ['GV002'] },
+    { id: 'NET201', name: 'Mạng máy tính', credits: 3, theoryPeriods: 45, practicePeriods: 0, facultyId: 'ATTT', type: 'chuyên ngành', prerequisites: ['INT101'], lecturerIds: ['GV003'] },
+];
+
+export const mockCourseSections: CourseSection[] = [
+    // HK1 23-24
+    { id: 'CS-BAS101-01', subjectId: 'BAS101', lecturerId: 'GV001', semesterId: 'HK1-2324', maxStudents: 100, schedule: 'T2, Tiết 1-3, P.301' },
+    { id: 'CS-INT101-01', subjectId: 'INT101', lecturerId: 'GV001', semesterId: 'HK1-2324', maxStudents: 100, schedule: 'T3, Tiết 4-6, P.302' },
+    { id: 'CS-INT201-01', subjectId: 'INT201', lecturerId: 'GV001', semesterId: 'HK1-2324', maxStudents: 80, schedule: 'T5, Tiết 7-9, P.401' },
+    { id: 'CS-INT101-02', subjectId: 'INT101', lecturerId: 'GV002', semesterId: 'HK1-2324', maxStudents: 100, schedule: 'T4, Tiết 1-3, P.303' },
+    { id: 'CS-INT301-01', subjectId: 'INT301', lecturerId: 'GV002', semesterId: 'HK1-2324', maxStudents: 80, schedule: 'T6, Tiết 4-6, P.402' },
+    { id: 'CS-NET201-01', subjectId: 'NET201', lecturerId: 'GV003', semesterId: 'HK1-2324', maxStudents: 120, schedule: 'T2, Tiết 7-9, P.501' },
+    { id: 'CS-BAS102-01', subjectId: 'BAS102', lecturerId: 'GV004', semesterId: 'HK1-2324', maxStudents: 150, schedule: 'T7, Tiết 1-3, P.502' },
+    // HK2 23-24
+    { id: 'CS-INT201-02', subjectId: 'INT201', lecturerId: 'GV001', semesterId: 'HK2-2324', maxStudents: 80, schedule: 'T2, Tiết 1-3, P.301' },
+    { id: 'CS-INT301-02', subjectId: 'INT301', lecturerId: 'GV002', semesterId: 'HK2-2324', maxStudents: 80, schedule: 'T4, Tiết 4-6, P.401' },
+    { id: 'CS-NET201-02', subjectId: 'NET201', lecturerId: 'GV003', semesterId: 'HK2-2324', maxStudents: 100, schedule: 'T5, Tiết 7-9, P.501' },
 ];
