@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { type Semester, type Faculty } from '@/lib/mock-data';
+import { type Semester, type Faculty, type Student } from '@/lib/mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -33,16 +33,19 @@ type CourseRegistrationClientPageProps = {
   sections: CourseSection[];
   semesters: Semester[];
   faculties: Faculty[];
+  students: Student[];
 };
 
 export function CourseRegistrationClientPage({ 
   sections: initialSections, 
   semesters, 
-  faculties 
+  faculties,
+  students
 }: CourseRegistrationClientPageProps) {
   const [sections, setSections] = React.useState(initialSections);
   const [selectedSemester, setSelectedSemester] = React.useState(semesters[0]?.id || '');
   const [selectedFaculty, setSelectedFaculty] = React.useState('all');
+  const [selectedStudent, setSelectedStudent] = React.useState<string | undefined>(undefined);
   const [selectedSections, setSelectedSections] = React.useState<Set<string>>(new Set());
 
   const handleFilter = () => {
@@ -91,10 +94,21 @@ export function CourseRegistrationClientPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Chọn học kỳ và khoa</CardTitle>
+          <CardTitle>Thông tin sinh viên và học kỳ</CardTitle>
           <CardDescription>Lọc danh sách lớp học phần theo thông tin dưới đây.</CardDescription>
         </CardHeader>
-        <CardContent className="grid sm:grid-cols-2 gap-4">
+        <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+             <div className='space-y-2'>
+                <label>Sinh viên</label>
+                <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Chọn sinh viên" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name} - {s.id}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
             <div className='space-y-2'>
                 <label>Học kỳ</label>
                 <Select value={selectedSemester} onValueChange={setSelectedSemester}>
@@ -198,7 +212,7 @@ export function CourseRegistrationClientPage({
             <div>
                 <span className="font-bold text-lg">Tổng số tín chỉ: {totalCredits}</span>
             </div>
-            <Button size="lg" disabled={selectedSections.size === 0}>
+            <Button size="lg" disabled={selectedSections.size === 0 || !selectedStudent}>
                 Đăng ký
             </Button>
         </CardFooter>

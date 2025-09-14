@@ -1,4 +1,4 @@
-import { mockSubjects, mockSemesters, mockFaculties, mockLecturers } from '@/lib/mock-data';
+import { mockSubjects, mockSemesters, mockFaculties, mockLecturers, mockStudents } from '@/lib/mock-data';
 import { CourseRegistrationClientPage } from './client-page';
 
 export default function CourseRegistrationPage() {
@@ -6,6 +6,7 @@ export default function CourseRegistrationPage() {
   const semesters = mockSemesters;
   const faculties = mockFaculties;
   const lecturers = mockLecturers;
+  const students = mockStudents;
 
   // In a real app, you would probably fetch available course sections instead of all subjects
   const courseSections = subjects.map(subject => ({
@@ -26,6 +27,7 @@ export default function CourseRegistrationPage() {
       sections={courseSections} 
       semesters={semesters}
       faculties={faculties}
+      students={students}
     />
   );
 }
