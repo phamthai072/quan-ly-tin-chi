@@ -44,7 +44,6 @@ export function CourseRegistrationClientPage({
 }: CourseRegistrationClientPageProps) {
   const [sections, setSections] = React.useState(initialSections);
   const [selectedSemester, setSelectedSemester] = React.useState(semesters[0]?.id || '');
-  const [selectedFaculty, setSelectedFaculty] = React.useState('all');
   const [selectedStudent, setSelectedStudent] = React.useState<string | undefined>(undefined);
   const [selectedSections, setSelectedSections] = React.useState<Set<string>>(new Set());
 
@@ -53,15 +52,13 @@ export function CourseRegistrationClientPage({
     if (selectedSemester) {
         filtered = filtered.filter(s => s.semesterId === selectedSemester);
     }
-    if (selectedFaculty && selectedFaculty !== 'all') {
-        filtered = filtered.filter(s => s.facultyId === selectedFaculty);
-    }
+    
     setSections(filtered);
   };
   
   React.useEffect(() => {
     handleFilter();
-  }, [selectedSemester, selectedFaculty]);
+  }, [selectedSemester]);
 
   const toggleSelection = (sectionId: string) => {
     setSelectedSections(prev => {
@@ -97,7 +94,7 @@ export function CourseRegistrationClientPage({
           <CardTitle>Thông tin sinh viên và học kỳ</CardTitle>
           <CardDescription>Lọc danh sách lớp học phần theo thông tin dưới đây.</CardDescription>
         </CardHeader>
-        <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <CardContent className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
              <div className='space-y-2'>
                 <label>Sinh viên</label>
                 <Select value={selectedStudent} onValueChange={setSelectedStudent}>
@@ -117,18 +114,6 @@ export function CourseRegistrationClientPage({
                     </SelectTrigger>
                     <SelectContent>
                         {semesters.map(s => <SelectItem key={s.id} value={s.id}>{s.name} - {s.schoolYear}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className='space-y-2'>
-                <label>Khoa</label>
-                <Select value={selectedFaculty} onValueChange={setSelectedFaculty}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Tất cả các khoa" />
-                    </SelectTrigger>
-                    <SelectContent>
-                         <SelectItem value="all">Tất cả các khoa</SelectItem>
-                        {faculties.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
                     </SelectContent>
                 </Select>
             </div>
