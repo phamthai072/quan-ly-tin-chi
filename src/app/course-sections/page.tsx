@@ -1,17 +1,28 @@
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { mockCourseSections, mockSubjects, mockLecturers, mockSemesters, mockClassrooms } from '@/lib/mock-data';
+import { CourseSectionsClientPage } from './client-page';
 
 export default function CourseSectionsPage() {
+  const sectionsWithDetails = mockCourseSections.map(section => {
+    const subject = mockSubjects.find(s => s.id === section.subjectId);
+    const lecturer = mockLecturers.find(l => l.id === section.lecturerId);
+    // A bit of a simplification as schedule string would need more complex parsing
+    const classroomName = section.schedule.split(',').pop()?.trim() || 'N/A';
+    
+    return {
+      ...section,
+      subjectName: subject?.name || 'N/A',
+      lecturerName: lecturer?.name || 'N/A',
+      classroomName: classroomName,
+    };
+  });
+
   return (
-    <div className="space-y-8">
-       <h1 className="text-3xl font-bold tracking-tight">Quản lý Lớp học phần</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Danh sách Lớp học phần</CardTitle>
-          <CardDescription>
-            Trang này đang được xây dựng.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    </div>
+    <CourseSectionsClientPage 
+      sections={sectionsWithDetails} 
+      subjects={mockSubjects}
+      lecturers={mockLecturers}
+      semesters={mockSemesters}
+      classrooms={mockClassrooms}
+    />
   );
 }
