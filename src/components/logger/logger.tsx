@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Database, ChevronDown, ChevronUp, Trash2, X, LoaderCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 const LogItem = ({ log }: { log: LogEntry }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -69,6 +69,38 @@ const LogItem = ({ log }: { log: LogEntry }) => {
 
 export const Logger = () => {
   const { logs, isLoggerOpen, toggleLogger, clearLogs } = useLogger();
+  const [height, setHeight] = useState(300);
+  const loggerRef = useRef<HTMLDivElement>(null);
+  const isResizing = useRef(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isResizing.current = true;
+  };
+
+  const handleMouseUp = useCallback(() => {
+    isResizing.current = false;
+  }, []);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizing.current) return;
+    const newHeight = window.innerHeight - e.clientY;
+    const minHeight = 100;
+    const maxHeight = window.innerHeight * 0.9;
+    if (newHeight >= minHeight && newHeight <= maxHeight) {
+        setHeight(newHeight);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
+
 
   return (
     <>
@@ -83,12 +115,20 @@ export const Logger = () => {
       )}
 
       <div
+        ref={loggerRef}
+        style={{ height: isLoggerOpen ? `${height}px` : '0px' }}
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-40 h-1/3 transform transition-transform duration-300 ease-in-out",
-          isLoggerOpen ? 'translate-y-0' : 'translate-y-full'
+          "fixed bottom-0 left-0 right-0 z-40 transform transition-all duration-300 ease-in-out",
+           isLoggerOpen ? 'translate-y-0' : 'translate-y-full'
         )}
       >
         <Card className="h-full flex flex-col rounded-t-lg border-t-2 border-primary shadow-2xl">
+           <div 
+             onMouseDown={handleMouseDown}
+             className="w-full h-2 cursor-row-resize flex items-center justify-center bg-muted/80 hover:bg-muted"
+           >
+                <div className="w-10 h-1 bg-border rounded-full" />
+           </div>
           <CardHeader className="flex flex-row items-center justify-between p-3 border-b">
             <CardTitle className="text-lg flex items-center gap-2">
               <Database className="h-5 w-5" />
