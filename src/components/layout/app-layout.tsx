@@ -9,10 +9,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <AppSidebar />
         </Sidebar>
-        <SidebarInset className="min-w-0 flex-1">
+        <SidebarInset className="min-w-0 flex-1 flex flex-col">
           <Header />
-          <main className="p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto max-w-screen-2xl">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            <div className="mx-auto w-full max-w-screen-2xl">
               {children}
             </div>
           </main>

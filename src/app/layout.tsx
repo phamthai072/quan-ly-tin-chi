@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AppLayout } from '@/components/layout/app-layout';
+import { LoggerProvider } from '@/contexts/logger-context';
+import { Logger } from '@/components/logger/logger';
 
 export const metadata: Metadata = {
   title: 'Tín Chỉ',
@@ -28,7 +30,10 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <AppLayout>{children}</AppLayout>
+        <LoggerProvider>
+          <AppLayout>{children}</AppLayout>
+          <Logger />
+        </LoggerProvider>
         <Toaster />
       </body>
     </html>
