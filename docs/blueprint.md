@@ -1,4 +1,4 @@
-# **App Name**: CreditFlow
+# **App Name**: Quản lý tín chỉ
 
 ## Core Features:
 
