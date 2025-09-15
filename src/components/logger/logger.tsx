@@ -47,19 +47,19 @@ const LogItem = ({ log }: { log: LogEntry }) => {
         <div className="mt-2 flex flex-col gap-2">
             <div className="space-y-1">
                 <h4 className="font-semibold">Request</h4>
-                <ScrollArea className="p-2 bg-muted/50 rounded-md max-h-40">
-                <pre className="whitespace-pre-wrap break-all text-xs">
-                    {JSON.stringify(log.request, null, 2)}
-                </pre>
-                </ScrollArea>
+                <div className="p-2 bg-muted/50 rounded-md max-h-40 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap break-all text-xs">
+                        {JSON.stringify(log.request, null, 2)}
+                    </pre>
+                </div>
             </div>
              <div className="space-y-1">
                 <h4 className="font-semibold">Response</h4>
-                <ScrollArea className="p-2 bg-muted/50 rounded-md max-h-40">
-                <pre className="whitespace-pre-wrap break-all text-xs">
-                    {JSON.stringify(log.response, null, 2)}
-                </pre>
-                </ScrollArea>
+                <div className="p-2 bg-muted/50 rounded-md max-h-40 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap break-all text-xs">
+                        {JSON.stringify(log.response, null, 2)}
+                    </pre>
+                </div>
             </div>
         </div>
       )}
