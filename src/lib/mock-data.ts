@@ -67,6 +67,16 @@ export type CourseSection = {
   schedule: string;
 };
 
+export type Result = {
+    id: string;
+    studentId: string;
+    subjectId: string;
+    semesterId: string;
+    midtermScore: number | null;
+    finalScore: number | null;
+    gpa: number | null;
+}
+
 export const mockStudents: Student[] = [
   { id: 'B20DCCN001', name: 'Nguyễn Văn An', class: 'D20CNPM1', major: 'Công nghệ phần mềm', program: 'Đại trà', gpa: 3.8, failedCourses: 0 },
   { id: 'B20DCCN002', name: 'Trần Thị Bình', class: 'D20CNPM2', major: 'Công nghệ phần mềm', program: 'Chất lượng cao', gpa: 3.9, failedCourses: 0 },
@@ -167,4 +177,13 @@ export const mockCourseSections: CourseSection[] = [
     { id: 'CS-INT201-02', subjectId: 'INT201', lecturerId: 'GV001', semesterId: 'HK2-2324', maxStudents: 80, schedule: 'T2, Tiết 1-3, P.301' },
     { id: 'CS-INT301-02', subjectId: 'INT301', lecturerId: 'GV002', semesterId: 'HK2-2324', maxStudents: 80, schedule: 'T4, Tiết 4-6, P.401' },
     { id: 'CS-NET201-02', subjectId: 'NET201', lecturerId: 'GV003', semesterId: 'HK2-2324', maxStudents: 100, schedule: 'T5, Tiết 7-9, P.501' },
+];
+
+export const mockResults: Result[] = [
+    { id: 'RES001', studentId: 'B20DCCN001', subjectId: 'BAS101', semesterId: 'HK1-2324', midtermScore: 8.5, finalScore: 9.0, gpa: 3.8 },
+    { id: 'RES002', studentId: 'B20DCCN001', subjectId: 'INT101', semesterId: 'HK1-2324', midtermScore: 9.0, finalScore: 9.5, gpa: 4.0 },
+    { id: 'RES003', studentId: 'B20DCCN002', subjectId: 'BAS101', semesterId: 'HK1-2324', midtermScore: 9.5, finalScore: 9.8, gpa: 4.0 },
+    { id: 'RES004', studentId: 'B20DCAT003', subjectId: 'BAS101', semesterId: 'HK1-2324', midtermScore: 7.0, finalScore: 8.0, gpa: 3.2 },
+    { id: 'RES005', studentId: 'B20DCAT004', subjectId: 'INT101', semesterId: 'HK1-2324', midtermScore: 5.0, finalScore: 6.0, gpa: 2.5 },
+    { id: 'RES006', studentId: 'B20DCVT005', subjectId: 'BAS102', semesterId: 'HK1-2324', midtermScore: 3.0, finalScore: 4.0, gpa: 1.5 },
 ];

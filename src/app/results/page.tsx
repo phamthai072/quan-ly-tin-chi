@@ -1,17 +1,27 @@
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { mockResults, mockSemesters, mockStudents, mockSubjects } from "@/lib/mock-data";
+import { ResultsClientPage } from "./client-page";
 
 export default function ResultsPage() {
-  return (
-    <div className="space-y-8">
-       <h1 className="text-3xl font-bold tracking-tight">Quản lý Kết quả</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Danh sách Kết quả</CardTitle>
-          <CardDescription>
-            Trang này đang được xây dựng.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    </div>
-  );
+
+    const resultsWithDetails = mockResults.map(result => {
+        const student = mockStudents.find(s => s.id === result.studentId);
+        const subject = mockSubjects.find(s => s.id === result.subjectId);
+        const semester = mockSemesters.find(s => s.id === result.semesterId);
+
+        return {
+            ...result,
+            studentName: student?.name || 'N/A',
+            subjectName: subject?.name || 'N/A',
+            semesterName: `${semester?.name} - ${semester?.schoolYear}` || 'N/A',
+        }
+    })
+
+    return (
+        <ResultsClientPage 
+            results={resultsWithDetails}
+            students={mockStudents}
+            semesters={mockSemesters}
+            subjects={mockSubjects}
+        />
+    );
 }
