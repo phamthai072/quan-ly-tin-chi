@@ -28,52 +28,52 @@ export const navMenuItems: NavMenuItem[] = [
   },
   {
       title: 'Tổng quan',
-      href: '/dashboard',
+      href: '/tong-quan',
       icon: LayoutDashboard,
   },
   {
       title: 'Phân tích',
-      href: '/analytics/room-utilization',
+      href: '/phan-tich/su-dung-phong',
       icon: BarChart3,
   },
   {
       title: 'Khoa',
-      href: '/faculties',
+      href: '/khoa',
       icon: BookCopy,
   },
   {
       title: 'Chuyên ngành',
-      href: '/majors',
+      href: '/chuyen-nganh',
       icon: BookCopy,
   },
   {
       title: 'Khóa học',
-      href: '/cohorts',
+      href: '/khoa-hoc',
       icon: GraduationCap,
   },
   {
       title: 'Môn học',
-      href: '/subjects',
+      href: '/mon-hoc',
       icon: BookCopy,
   },
   {
       title: 'Học kỳ',
-      href: '/semesters',
+      href: '/hoc-ky',
       icon: CalendarClock,
   },
   {
       title: 'Lớp học phần',
-      href: '/course-sections',
+      href: '/lop-hoc-phan',
       icon: Presentation,
   },
   {
       title: 'Phòng học',
-      href: '/classrooms',
+      href: '/phong-hoc',
       icon: School,
   },
   {
       title: 'Lịch học',
-      href: '/schedules',
+      href: '/lich-hoc',
       icon: CalendarClock,
   },
   {
@@ -83,12 +83,12 @@ export const navMenuItems: NavMenuItem[] = [
   },
   {
       title: 'Danh sách',
-      href: '/lecturers',
+      href: '/giang-vien',
       icon: BookUser,
   },
   {
     title: 'Lương giảng viên',
-    href: '/lecturer-salary',
+    href: '/luong-giang-vien',
     icon: Wallet,
   },
   {
@@ -98,18 +98,18 @@ export const navMenuItems: NavMenuItem[] = [
   },
   {
       title: 'Danh sách',
-      href: '/students',
+      href: '/sinh-vien',
       icon: Users,
 
   },
   {
       title: 'Kết quả học tập',
-      href: '/results',
+      href: '/ket-qua',
       icon: FileText,
   },
   {
       title: 'Đăng ký tín chỉ',
-      href: '/course-registration',
+      href: '/dang-ky-tin-chi',
       icon: BookCopy,
   },
 ];
