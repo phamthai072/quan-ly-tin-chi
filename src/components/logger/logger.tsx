@@ -44,7 +44,7 @@ const LogItem = ({ log }: { log: LogEntry }) => {
         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </div>
       {isExpanded && (
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="mt-2 flex flex-col gap-2">
             <div className="space-y-1">
                 <h4 className="font-semibold">Request</h4>
                 <ScrollArea className="p-2 bg-muted/50 rounded-md max-h-40">
