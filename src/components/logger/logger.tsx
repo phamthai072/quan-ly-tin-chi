@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Bug, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react';
+import { Database, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 
 const LogItem = ({ log }: { log: LogEntry }) => {
@@ -50,10 +50,10 @@ export const Logger = () => {
       {!isLoggerOpen && (
         <Button
           onClick={toggleLogger}
-          className="fixed bottom-4 left-4 z-50 rounded-full h-12 w-12"
+          className="fixed bottom-4 right-4 z-50 rounded-full h-12 w-12"
           aria-label="Open Logger"
         >
-          <Bug className="h-6 w-6" />
+          <Database className="h-6 w-6" />
         </Button>
       )}
 
@@ -66,7 +66,7 @@ export const Logger = () => {
         <Card className="h-full flex flex-col rounded-t-lg border-t-2 border-primary shadow-2xl">
           <CardHeader className="flex flex-row items-center justify-between p-3 border-b">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Bug className="h-5 w-5" />
+              <Database className="h-5 w-5" />
               Logger
             </CardTitle>
             <div className="flex items-center gap-2">
