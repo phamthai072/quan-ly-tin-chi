@@ -154,7 +154,7 @@ export const Logger = () => {
                 </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-0 flex-1">
+          <CardContent className="p-0 flex-1 overflow-y-auto">
             <ScrollArea className="h-full">
               {logs.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
