@@ -12,7 +12,7 @@ export const useApi = <T, P extends any[]>(
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<any | null>(null);
   const [status, setStatus] = useState<ApiStatus>('idle');
-  const { addLog } = useLogger();
+  const { addLog, updateLog } = useLogger();
   const { endpoint, method = 'GET' } = options;
 
   const execute = useCallback(
@@ -21,22 +21,22 @@ export const useApi = <T, P extends any[]>(
       setData(null);
       setError(null);
       
-      addLog({ type: 'req', method, endpoint, data: args });
+      const logId = addLog({ method, endpoint, request: args });
 
       try {
         const result = await apiCall(...args);
         setData(result);
         setStatus('success');
-        addLog({ type: 'res', method, endpoint, data: result });
+        updateLog(logId, { response: result, status: 'success' });
         return result;
       } catch (e) {
         setError(e);
         setStatus('error');
-        addLog({ type: 'res', method, endpoint, data: e });
+        updateLog(logId, { response: e, status: 'error' });
         throw e;
       }
     },
-    [apiCall, addLog, endpoint, method]
+    [apiCall, addLog, updateLog, endpoint, method]
   );
 
   return { data, error, status, execute, isLoading: status === 'loading' };

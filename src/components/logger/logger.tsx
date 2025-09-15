@@ -6,37 +6,62 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Database, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react';
+import { Database, ChevronDown, ChevronUp, Trash2, X, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 
 const LogItem = ({ log }: { log: LogEntry }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const variant = log.type === 'req' ? 'secondary' : 'default';
   const httpMethod = log.method.toUpperCase();
-  let badgeColor = 'bg-gray-500';
-  if (httpMethod === 'GET') badgeColor = 'bg-blue-500';
-  else if (httpMethod === 'POST') badgeColor = 'bg-green-500';
-  else if (httpMethod === 'PUT') badgeColor = 'bg-yellow-500';
-  else if (httpMethod === 'DELETE') badgeColor = 'bg-red-500';
+  let methodBadgeColor = 'bg-gray-500';
+  if (httpMethod === 'GET') methodBadgeColor = 'bg-blue-500';
+  else if (httpMethod === 'POST') methodBadgeColor = 'bg-green-500';
+  else if (httpMethod === 'PUT') methodBadgeColor = 'bg-yellow-500';
+  else if (httpMethod === 'DELETE') methodBadgeColor = 'bg-red-500';
+
+  let statusBadgeColor = '';
+  switch(log.status) {
+      case 'success':
+          statusBadgeColor = 'bg-green-600';
+          break;
+      case 'error':
+          statusBadgeColor = 'bg-red-600';
+          break;
+      case 'pending':
+          statusBadgeColor = 'bg-yellow-500';
+          break;
+  }
   
   return (
     <div className="p-2 border-b border-border/50 text-xs font-mono">
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
         <span className="font-bold w-20">{log.timestamp}</span>
-        <Badge variant={variant} className={cn("w-12 justify-center", variant === 'default' ? "bg-primary" : "")}>
-          {log.type.toUpperCase()}
+        <Badge className={cn("w-12 justify-center", statusBadgeColor)}>
+            {log.status === 'pending' ? <LoaderCircle className="animate-spin h-3 w-3"/> : log.status.toUpperCase()}
         </Badge>
-        <Badge className={cn("w-20 justify-center", badgeColor)}>{httpMethod}</Badge>
+        <Badge className={cn("w-20 justify-center", methodBadgeColor)}>{httpMethod}</Badge>
         <span className="flex-1 truncate">{log.endpoint}</span>
         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </div>
       {isExpanded && (
-        <ScrollArea className="mt-2 p-2 bg-muted/50 rounded-md max-h-40">
-          <pre className="whitespace-pre-wrap break-all text-xs">
-            {JSON.stringify(log.data, null, 2)}
-          </pre>
-        </ScrollArea>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+                <h4 className="font-semibold">Request</h4>
+                <ScrollArea className="p-2 bg-muted/50 rounded-md max-h-40">
+                <pre className="whitespace-pre-wrap break-all text-xs">
+                    {JSON.stringify(log.request, null, 2)}
+                </pre>
+                </ScrollArea>
+            </div>
+             <div className="space-y-1">
+                <h4 className="font-semibold">Response</h4>
+                <ScrollArea className="p-2 bg-muted/50 rounded-md max-h-40">
+                <pre className="whitespace-pre-wrap break-all text-xs">
+                    {JSON.stringify(log.response, null, 2)}
+                </pre>
+                </ScrollArea>
+            </div>
+        </div>
       )}
     </div>
   );
@@ -85,7 +110,7 @@ export const Logger = () => {
                   No logs yet.
                 </div>
               ) : (
-                logs.map((log) => <LogItem key={log.id} log={log} />)
+                [...logs].reverse().map((log) => <LogItem key={log.id} log={log} />)
               )}
             </ScrollArea>
           </CardContent>
