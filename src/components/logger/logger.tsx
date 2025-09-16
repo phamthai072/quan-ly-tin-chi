@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Database, ChevronDown, ChevronUp, Trash2, X, LoaderCircle } from 'lucide-react';
+import { Database, ChevronDown, ChevronUp, Trash2, X, LoaderCircle, Maximize, Minimize } from 'lucide-react';
 import { useState, useCallback, useRef, useEffect } from 'react';
 
 const LogItem = ({ log }: { log: LogEntry }) => {
@@ -70,11 +70,14 @@ const LogItem = ({ log }: { log: LogEntry }) => {
 export const Logger = () => {
   const { logs, isLoggerOpen, toggleLogger, clearLogs } = useLogger();
   const [height, setHeight] = useState(300);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [previousHeight, setPreviousHeight] = useState(300);
   const loggerRef = useRef<HTMLDivElement>(null);
   const isResizing = useRef(false);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
+    if(isFullScreen) return;
     isResizing.current = true;
   };
 
@@ -91,6 +94,18 @@ export const Logger = () => {
         setHeight(newHeight);
     }
   }, []);
+
+  const toggleFullScreen = () => {
+    setIsFullScreen(prev => {
+        if (!prev) {
+            setPreviousHeight(height);
+            setHeight(window.innerHeight);
+        } else {
+            setHeight(previousHeight);
+        }
+        return !prev;
+    });
+  }
 
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove);
@@ -112,6 +127,7 @@ export const Logger = () => {
     }
   }, [isLoggerOpen]);
 
+  const loggerHeight = isFullScreen ? '100vh' : `${height}px`;
 
   return (
     <>
@@ -127,7 +143,7 @@ export const Logger = () => {
 
       <div
         ref={loggerRef}
-        style={{ height: isLoggerOpen ? `${height}px` : '0px' }}
+        style={{ height: isLoggerOpen ? loggerHeight : '0px' }}
         className={cn(
           "fixed bottom-0 left-0 right-0 z-40 transform transition-all duration-300 ease-in-out",
            isLoggerOpen ? 'translate-y-0' : 'translate-y-full'
@@ -136,7 +152,10 @@ export const Logger = () => {
         <Card className="h-full flex flex-col rounded-t-lg border-t-2 border-primary shadow-2xl">
            <div 
              onMouseDown={handleMouseDown}
-             className="w-full h-2 cursor-row-resize flex items-center justify-center bg-muted/80 hover:bg-muted"
+             className={cn(
+                "w-full h-2 flex items-center justify-center bg-muted/80",
+                isFullScreen ? "cursor-default" : "cursor-row-resize hover:bg-muted"
+            )}
            >
                 <div className="w-10 h-1 bg-border rounded-full" />
            </div>
@@ -146,6 +165,9 @@ export const Logger = () => {
               Logger
             </CardTitle>
             <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" onClick={toggleFullScreen} aria-label="Toggle Fullscreen">
+                    {isFullScreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                </Button>
                 <Button variant="ghost" size="icon" onClick={clearLogs} aria-label="Clear Logs">
                     <Trash2 className="h-4 w-4" />
                 </Button>
@@ -154,7 +176,7 @@ export const Logger = () => {
                 </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-0 flex-1 overflow-y-auto">
+          <CardContent className="p-0 flex-1">
             <ScrollArea className="h-full">
               {logs.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
