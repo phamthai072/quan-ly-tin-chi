@@ -180,3 +180,12 @@ export const mockResults: Result[] = [
     { id: 'RES005', studentId: 'B20DCAT004', subjectId: 'INT101', semesterId: 'HK1-2324', midtermScore: 5.0, finalScore: 6.0, gpa: 2.5 },
     { id: 'RES006', studentId: 'B20DCVT005', subjectId: 'BAS102', semesterId: 'HK1-2324', midtermScore: 3.0, finalScore: 4.0, gpa: 1.5 },
 ];
+
+
+export const mockFaculties: Faculty[] = [
+    { ma_khoa: 'CNTT', ten_khoa: 'Công nghệ thông tin' },
+    { ma_khoa: 'ATTT', ten_khoa: 'An toàn thông tin' },
+    { ma_khoa: 'VT', ten_khoa: 'Viễn thông' },
+    { ma_khoa: 'DT', ten_khoa: 'Điện tử' },
+    { ma_khoa: 'KT', ten_khoa: 'Kinh tế' },
+];
