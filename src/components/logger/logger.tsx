@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Database, ChevronDown, ChevronUp, Trash2, X, LoaderCircle, Maximize, Minimize } from 'lucide-react';
+import { Database, ChevronDown, ChevronUp, X, LoaderCircle, Maximize, Minimize } from 'lucide-react';
 import { useState, useCallback, useRef, useEffect } from 'react';
 
 const LogItem = ({ log }: { log: LogEntry }) => {
@@ -167,9 +167,6 @@ export const Logger = () => {
             <div className="flex items-center gap-2">
                 <Button variant="ghost" size="icon" onClick={toggleFullScreen} aria-label="Toggle Fullscreen">
                     {isFullScreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-                </Button>
-                <Button variant="ghost" size="icon" onClick={clearLogs} aria-label="Clear Logs">
-                    <Trash2 className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={toggleLogger} aria-label="Close Logger">
                     <X className="h-4 w-4" />
