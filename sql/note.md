@@ -10,4 +10,4 @@ CROSS JOIN → tất cả kết hợp với tất cả.
 
 SELF JOIN → join bảng với chính nó.
 
-![alt text](image.png)
+![alt text](image-1.png)

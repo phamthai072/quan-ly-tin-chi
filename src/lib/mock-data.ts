@@ -16,8 +16,8 @@ export type Lecturer = {
 };
 
 export type Faculty = {
-  id: string;
-  name: string;
+    ma_khoa: string;
+    ten_khoa: string;
 };
 
 export type Major = {
@@ -99,13 +99,6 @@ export const mockLecturers: Lecturer[] = [
   { id: 'GV004', name: 'Phạm Thị D', faculty: 'Điện tử', unitPrice: 180000 },
 ];
 
-export const mockFaculties: Faculty[] = [
-    { id: 'CNTT', name: 'Công nghệ thông tin' },
-    { id: 'ATTT', name: 'An toàn thông tin' },
-    { id: 'VT', name: 'Viễn thông' },
-    { id: 'DT', name: 'Điện tử' },
-    { id: 'KT', name: 'Kinh tế' },
-];
 
 export const mockMajors: Major[] = [
     { id: 'CNPM', name: 'Công nghệ phần mềm', facultyId: 'CNTT' },

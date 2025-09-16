@@ -2,6 +2,9 @@
 -- tạo mã sv
 -- tạo mã mh
 
+USE QuanLyTinChi;
+GO
+
 -- ## 5. Trigger: **Ngăn giảng viên dạy quá 8 lớp trong một học kỳ**
 
 -- Trigger kiểm tra: Giảng viên không được dạy quá 8 lớp trong một học kỳ

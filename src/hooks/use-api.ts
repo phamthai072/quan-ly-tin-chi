@@ -1,43 +1,64 @@
 "use client";
 
-import { useState, useCallback } from 'react';
-import { useLogger } from '@/contexts/logger-context';
+import { useState, useCallback } from "react";
+import { useLogger } from "@/contexts/logger-context";
 
-type ApiStatus = 'idle' | 'loading' | 'success' | 'error';
+type ApiStatus = "idle" | "loading" | "success" | "error";
 
-export const useApi = <T, P extends any[]>(
-  apiCall: (...args: P) => Promise<T>,
-  options: { endpoint: string; method?: string }
-) => {
-  const [data, setData] = useState<T | null>(null);
+interface ApiCallParams {
+  endpoint: string;
+  method?: string;
+  body?: any;
+  headers?: Record<string, string>;
+  query?: Record<string, string | number>;
+}
+
+export const useApi = () => {
+  const [data, setData] = useState<any | null>(null);
   const [error, setError] = useState<any | null>(null);
-  const [status, setStatus] = useState<ApiStatus>('idle');
+  const [status, setStatus] = useState<ApiStatus>("idle");
   const { addLog, updateLog } = useLogger();
-  const { endpoint, method = 'GET' } = options;
 
-  const execute = useCallback(
-    async (...args: P) => {
-      setStatus('loading');
+  const apiCall = useCallback(
+    async ({ endpoint, method = "GET", body, headers, query }: ApiCallParams) => {
+      setStatus("loading");
       setData(null);
       setError(null);
-      
-      const logId = addLog({ method, endpoint, request: args });
+
+      let url = endpoint;
+      if (query) {
+        const qs = new URLSearchParams(query as any).toString();
+        url += `?${qs}`;
+      }
+
+      const logId = addLog({ method, endpoint: url, request: body });
 
       try {
-        const result = await apiCall(...args);
+        const res = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            ...headers,
+          },
+          body: body ? JSON.stringify(body) : undefined,
+        });
+
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+
+        const result = await res.json();
         setData(result);
-        setStatus('success');
-        updateLog(logId, { response: result, status: 'success' });
+        setStatus("success");
+        updateLog(logId, { response: result, status: "success" });
         return result;
       } catch (e) {
         setError(e);
-        setStatus('error');
-        updateLog(logId, { response: e, status: 'error' });
+        setStatus("error");
+        updateLog(logId, { response: e, status: "error" });
         throw e;
       }
     },
-    [apiCall, addLog, updateLog, endpoint, method]
+    [addLog, updateLog]
   );
 
-  return { data, error, status, execute, isLoading: status === 'loading' };
+  return { apiCall, data, error, status, isLoading: status === "loading" };
 };

@@ -2,7 +2,6 @@ import { type NextRequest } from 'next/server'
 import sql from 'mssql';
 
 const sqlConfig: sql.config = {
-
     user: process.env.DB_USER,
     password: process.env.DB_PWD,
     database: process.env.DB_NAME,
@@ -29,16 +28,20 @@ async function getPool() {
 }
 
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
     try {
-        console.log(`sqlConfig`, sqlConfig)
+        const body = request?.body && await request.json();
+
+        console.log("post body:", body, body?.query);
+
         const sql = await getPool()
-        const result = await sql.query`select * from sinh_vien`
-        console.dir(result)
+        const result = await sql.query(body?.query)
+
+        console.log("sql query: ", body?.query, ", result:",JSON.stringify(result))
         return new Response(
             JSON.stringify({
-                success: false,
-                data: result
+                success: true,
+                result: result
             }), {
             status: 200,
             headers: {
@@ -50,7 +53,7 @@ export async function GET(request: NextRequest) {
         return new Response(
             JSON.stringify({
                 success: false,
-                message: error.message
+                error: error.message
             }), {
             status: 500,
             headers: {
@@ -58,17 +61,4 @@ export async function GET(request: NextRequest) {
             },
         })
     }
-}
-
-export async function POST(request: NextRequest) {
-    await sql.connect(sqlConfig)
-    const result = await sql.query`select * from mytable where id = 1`
-    console.dir(result)
-    const body = await request.json();
-    return new Response(JSON.stringify({ message: 'Hello from POST!', data: body }), {
-        status: 200,
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
 }

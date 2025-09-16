@@ -1,6 +1,9 @@
-Danh sách Procedure (chạy khi đc gọi)
+-- Danh sách Procedure (chạy khi đc gọi)
 
-1. proc_dang_ky_lop – Thực hiện đăng ký lớp học phần cho sinh viên (gồm tất cả kiểm tra ràng buộc).
+USE QuanLyTinChi;
+GO
+
+-- 1. proc_dang_ky_lop – Thực hiện đăng ký lớp học phần cho sinh viên (gồm tất cả kiểm tra ràng buộc).
 
 -- =============================================
 -- Procedure: proc_dang_ky_lop
@@ -159,7 +162,7 @@ BEGIN
     END CATCH
 END;
 
-1. proc_huy_dang_ky – Hủy đăng ký lớp học phần của sinh viên.
+-- 1. proc_huy_dang_ky – Hủy đăng ký lớp học phần của sinh viên.
 
 -- =============================================
 -- Procedure: proc_huy_dang_ky
@@ -228,8 +231,8 @@ BEGIN
 END;
 
 
-1. proc_them_sinh_vien – Thêm sinh viên mới, tự sinh mã SV theo quy tắc.
--> mã sv: [Loại hình - 2 chữ][Khóa học - 2 số][Mã khoa - 3 chữ][Số thứ tự - 4 số] -> ĐH18CNT0001 → SV hệ đại học, khóa 2018, khoa CNTT, số thứ tự 0001.
+-- 1. proc_them_sinh_vien – Thêm sinh viên mới, tự sinh mã SV theo quy tắc.
+-- -> mã sv: [Loại hình - 2 chữ][Khóa học - 2 số][Mã khoa - 3 chữ][Số thứ tự - 4 số] -> ĐH18CNT0001 → SV hệ đại học, khóa 2018, khoa CNTT, số thứ tự 0001.
 
 -- =============================================
 -- Procedure: proc_them_sinh_vien
@@ -291,8 +294,8 @@ END;
 
 
 
-1. proc_them_mon_hoc – Thêm môn học mới, tự sinh mã môn học theo quy tắc.
--> ma_mh [Mã khoa - 3 chữ][Mã chuyên ngành - 2 chữ][Loại môn - 2 chữ][Số thứ tự - 4 số] -> CNTAICB0001 → Khoa CNTT, chuyên ngành AI, môn cơ bản số 0001.
+-- 1. proc_them_mon_hoc – Thêm môn học mới, tự sinh mã môn học theo quy tắc.
+-- -> ma_mh [Mã khoa - 3 chữ][Mã chuyên ngành - 2 chữ][Loại môn - 2 chữ][Số thứ tự - 4 số] -> CNTAICB0001 → Khoa CNTT, chuyên ngành AI, môn cơ bản số 0001.
 
 -- =============================================
 -- Procedure: proc_them_mon_hoc

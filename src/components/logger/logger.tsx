@@ -36,26 +36,26 @@ const LogItem = ({ log }: { log: LogEntry }) => {
     <div className="p-2 border-b border-border/50 text-xs font-mono">
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
         <span className="font-bold w-20">{log.timestamp}</span>
-        <Badge className={cn("w-12 justify-center", statusBadgeColor)}>
+        <Badge className={cn("pl-2 pr-2 justify-center", statusBadgeColor)}>
             {log.status === 'pending' ? <LoaderCircle className="animate-spin h-3 w-3"/> : log.status.toUpperCase()}
         </Badge>
         <Badge className={cn("w-20 justify-center", methodBadgeColor)}>{httpMethod}</Badge>
-        <span className="flex-1 truncate">{log.endpoint}</span>
+        <span className="flex-1 truncate">{`Query: ${log?.request?.query}`}</span>
         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </div>
       {isExpanded && (
         <div className="mt-2 flex flex-col gap-2">
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
                 <h4 className="font-semibold">Request</h4>
                 <div className="p-2 bg-muted/50 rounded-md max-h-40 overflow-y-auto">
                     <pre className="whitespace-pre-wrap break-all text-xs">
                         {JSON.stringify(log.request, null, 2)}
                     </pre>
                 </div>
-            </div>
+            </div> */}
              <div className="space-y-1">
                 <h4 className="font-semibold">Response</h4>
-                <div className="p-2 bg-muted/50 rounded-md max-h-40 overflow-y-auto">
+                <div className="p-2 bg-muted/50 rounded-md max-h-80 overflow-y-auto">
                     <pre className="whitespace-pre-wrap break-all text-xs">
                         {JSON.stringify(log.response, null, 2)}
                     </pre>

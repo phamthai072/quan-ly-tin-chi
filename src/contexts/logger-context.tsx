@@ -24,33 +24,7 @@ type LoggerContextType = {
 const LoggerContext = createContext<LoggerContextType | undefined>(undefined);
 
 const initialLogs: LogEntry[] = [
-    {
-        id: 1,
-        timestamp: new Date(Date.now() - 5000).toLocaleTimeString(),
-        method: 'GET',
-        endpoint: '/api/students',
-        request: { page: 1, limit: 10, search: '' },
-        response: { message: 'Successfully retrieved 12 students.', count: 12 },
-        status: 'success',
-    },
-    {
-        id: 2,
-        timestamp: new Date(Date.now() - 2000).toLocaleTimeString(),
-        method: 'POST',
-        endpoint: '/api/results',
-        request: { studentId: 'B20DCCN001', subjectId: 'INT201', midtermScore: 8.0, finalScore: 7.5 },
-        response: { success: true, message: 'Result saved successfully.', resultId: 'RES007' },
-        status: 'success',
-    },
-    {
-        id: 3,
-        timestamp: new Date(Date.now() - 1000).toLocaleTimeString(),
-        method: 'POST',
-        endpoint: '/api/lecturers',
-        request: { name: 'New Lecturer', faculty: 'CNTT' },
-        response: { error: 'Failed to create lecturer', code: 500 },
-        status: 'error',
-    }
+    
 ];
 
 
