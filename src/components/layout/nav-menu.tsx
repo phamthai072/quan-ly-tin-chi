@@ -29,7 +29,7 @@ export function NavMenu() {
     const isActive = item.href ? pathname.startsWith(item.href) : false;
 
     if (item.isHeader) {
-      return <SidebarGroupLabel key={item.title}>{item.title}</SidebarGroupLabel>;
+      return <SidebarGroupLabel className='text-lg w-full pl-3 font-semibold text-black text-center' key={item.title}>{item.title}</SidebarGroupLabel>;
     }
 
     if (item.children) {

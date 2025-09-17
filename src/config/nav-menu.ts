@@ -37,27 +37,27 @@ import {
         icon: BarChart3,
     },
     {
-        title: 'Khoa',
+        title: 'Khoa - Ok',
         href: '/faculties',
         icon: BookCopy,
     },
     {
-        title: 'Chuyên ngành',
+        title: 'Chuyên ngành - Ok',
         href: '/majors',
         icon: BookCopy,
     },
     {
-        title: 'Khóa học',
+        title: 'Khóa học - Ok',
         href: '/cohorts',
         icon: GraduationCap,
     },
     {
-        title: 'Môn học',
+        title: 'Môn học - Ok',
         href: '/subjects',
         icon: BookCopy,
     },
     {
-        title: 'Học kỳ',
+        title: 'Học kỳ - Ok',
         href: '/semesters',
         icon: CalendarClock,
     },
@@ -67,7 +67,7 @@ import {
         icon: Presentation,
     },
     {
-        title: 'Phòng học',
+        title: 'Phòng học - Ok',
         href: '/classrooms',
         icon: School,
     },

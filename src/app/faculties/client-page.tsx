@@ -223,7 +223,6 @@ export function FacultiesClientPage({
         title: "Xóa khoa thành công",
       });
       setReload((m) => !m);
-      // setDialog((m) => !m);
     } else {
       toast({
         title: "Xóa khoa thất bại",
