@@ -104,7 +104,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: Users,
   },
   {
-    title: "Kết quả học tập",
+    title: "Điểm học tập",
     href: "/results",
     icon: FileText,
   },
