@@ -49,7 +49,7 @@ const LogItem = ({ log }: { log: LogEntry }) => {
   return (
     <div className="p-2 border-b border-border/50 text-xs font-mono">
       <div
-        className="flex items-center gap-2 cursor-pointer"
+        className="flex items-center gap-2 cursor-pointer max-h-80 overflow-y-auto"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="font-bold w-20">{log.timestamp}</span>
@@ -69,6 +69,9 @@ const LogItem = ({ log }: { log: LogEntry }) => {
             language="sql"
             style={docco}
             customStyle={{
+              margin: 0,
+              padding: 0,
+              fontSize: 12,
               background: "transparent",
             }}
           >
