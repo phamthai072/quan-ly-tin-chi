@@ -49,13 +49,14 @@ export async function POST(request: NextRequest) {
             },
         })
     } catch (error: any) {
-        console.error(error)
+        console.log("post error: ", error)
+        console.log("post error 1: ", error?.message)
         return new Response(
             JSON.stringify({
                 success: false,
                 error: error.message
             }), {
-            status: 500,
+            status: 200,
             headers: {
                 'Content-Type': 'application/json',
             },
