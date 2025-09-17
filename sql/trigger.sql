@@ -59,3 +59,165 @@ BEGIN
 END;
 
 
+/* ===============================================
+   File: trg_no_delete_constraints.sql
+   Mục đích: Định nghĩa các trigger chống xóa dữ liệu
+   Áp dụng cho các bảng: khoa, chuyen_nganh, lop, mon_hoc
+   Phương án: Chặn xóa nếu còn dữ liệu liên quan
+   =============================================== */
+
+-------------------------------------------------
+-- 1. Trigger chống xóa Khoa
+--    - Không cho xóa Khoa nếu còn Chuyên ngành
+-------------------------------------------------
+IF OBJECT_ID('trg_no_delete_khoa', 'TR') IS NOT NULL
+    DROP TRIGGER trg_no_delete_khoa;
+GO
+
+CREATE TRIGGER trg_no_delete_khoa
+ON khoa
+INSTEAD OF DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Nếu còn chuyên ngành thuộc khoa đang bị xóa → báo lỗi
+    IF EXISTS (
+        SELECT 1
+        FROM deleted d
+        JOIN chuyen_nganh c ON d.ma_khoa = c.ma_khoa
+    )
+    BEGIN
+        RAISERROR (N'Không thể xóa Khoa vì còn Chuyên ngành thuộc khoa này.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END
+
+    -- Nếu không vướng ràng buộc → thực hiện xóa
+    DELETE FROM khoa
+    WHERE ma_khoa IN (SELECT ma_khoa FROM deleted);
+END;
+GO
+
+
+-------------------------------------------------
+-- 2. Trigger chống xóa Chuyên ngành
+--    - Không cho xóa nếu còn Lớp hoặc Môn học
+-------------------------------------------------
+IF OBJECT_ID('trg_no_delete_chuyen_nganh', 'TR') IS NOT NULL
+    DROP TRIGGER trg_no_delete_chuyen_nganh;
+GO
+
+CREATE TRIGGER trg_no_delete_chuyen_nganh
+ON chuyen_nganh
+INSTEAD OF DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Nếu còn lớp thuộc chuyên ngành
+    IF EXISTS (
+        SELECT 1
+        FROM deleted d
+        JOIN lop l ON d.ma_chuyen_nganh = l.ma_chuyen_nganh
+    )
+    BEGIN
+        RAISERROR (N'Không thể xóa Chuyên ngành vì còn Lớp thuộc chuyên ngành này.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END
+
+    -- Nếu còn môn học thuộc chuyên ngành
+    IF EXISTS (
+        SELECT 1
+        FROM deleted d
+        JOIN mon_hoc m ON d.ma_chuyen_nganh = m.ma_chuyen_nganh
+    )
+    BEGIN
+        RAISERROR (N'Không thể xóa Chuyên ngành vì còn Môn học thuộc chuyên ngành này.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END
+
+    DELETE FROM chuyen_nganh
+    WHERE ma_chuyen_nganh IN (SELECT ma_chuyen_nganh FROM deleted);
+END;
+GO
+
+
+-------------------------------------------------
+-- 3. Trigger chống xóa Lớp
+--    - Không cho xóa nếu còn Sinh viên trong lớp
+-------------------------------------------------
+IF OBJECT_ID('trg_no_delete_lop', 'TR') IS NOT NULL
+    DROP TRIGGER trg_no_delete_lop;
+GO
+
+CREATE TRIGGER trg_no_delete_lop
+ON lop
+INSTEAD OF DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Nếu còn sinh viên thuộc lớp
+    IF EXISTS (
+        SELECT 1
+        FROM deleted d
+        JOIN sinh_vien sv ON d.ma_lop = sv.ma_lop
+    )
+    BEGIN
+        RAISERROR (N'Không thể xóa Lớp vì còn Sinh viên trong lớp.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END
+
+    DELETE FROM lop
+    WHERE ma_lop IN (SELECT ma_lop FROM deleted);
+END;
+GO
+
+
+-------------------------------------------------
+-- 4. Trigger chống xóa Môn học
+--    - Không cho xóa nếu còn Kết quả học tập hoặc Sinh viên đã đăng ký
+-------------------------------------------------
+IF OBJECT_ID('trg_no_delete_mon_hoc', 'TR') IS NOT NULL
+    DROP TRIGGER trg_no_delete_mon_hoc;
+GO
+
+CREATE TRIGGER trg_no_delete_mon_hoc
+ON mon_hoc
+INSTEAD OF DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Nếu còn kết quả học tập liên quan đến môn học
+    IF EXISTS (
+        SELECT 1
+        FROM deleted d
+        JOIN ket_qua kq ON d.ma_mh = kq.ma_mh
+    )
+    BEGIN
+        RAISERROR (N'Không thể xóa Môn học vì còn Kết quả học tập liên quan.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END
+
+    -- Nếu còn đăng ký học của sinh viên
+    IF EXISTS (
+        SELECT 1
+        FROM deleted d
+        JOIN dang_ky_hoc dk ON d.ma_mh = dk.ma_mh
+    )
+    BEGIN
+        RAISERROR (N'Không thể xóa Môn học vì còn Sinh viên đang đăng ký.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END
+
+    DELETE FROM mon_hoc
+    WHERE ma_mh IN (SELECT ma_mh FROM deleted);
+END;
+GO

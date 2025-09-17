@@ -76,13 +76,14 @@ import {
         href: '/schedules',
         icon: CalendarClock,
     },
+    // ------------------------------------
     {
         title: "Giảng viên",
         icon: BookUser,
         isHeader: true,
     },
     {
-        title: 'Danh sách',
+        title: 'Danh sách - Ok',
         href: '/lecturers',
         icon: BookUser,
     },
@@ -91,13 +92,14 @@ import {
       href: '/lecturer-salary',
       icon: Wallet,
     },
+    // ------------------------------------
     {
         title: "Sinh viên",
         icon: Users,
         isHeader: true,
     },
     {
-        title: 'Danh sách',
+        title: 'Danh sách - Ok',
         href: '/students',
         icon: Users,
   
