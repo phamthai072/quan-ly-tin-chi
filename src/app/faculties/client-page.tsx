@@ -27,8 +27,10 @@ import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useApi } from '@/hooks/use-api';
 import { toast } from '@/hooks/use-toast';
+import { useRenderCount } from '@/hooks/useRenderCount';
 
 export function FacultiesClientPage({ faculties: initialFaculties }: { faculties: Faculty[] }) {
+  const renderCount = useRenderCount();
   const { apiCall, isLoading } = useApi();
   const [reload, setReload] = React.useState(true)
   const [dialog, setDialog] = React.useState(false)
@@ -279,7 +281,7 @@ export function FacultiesClientPage({ faculties: initialFaculties }: { faculties
                     </TableCell>
                   </TableRow>
                 )) : <TableRow>
-                  <TableCell colSpan={3} className='text-center'>Không có dữ liệu</TableCell>
+                 {renderCount < 1 && <TableCell colSpan={3} className='text-center'>Không có dữ liệu</TableCell>}
                 </TableRow>
               }
             </TableBody>
