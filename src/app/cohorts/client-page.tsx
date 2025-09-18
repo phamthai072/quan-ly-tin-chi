@@ -364,7 +364,7 @@ export function CohortsClientPage({
                   <Input
                     id="cohort-id"
                     value={newCohortId}
-                    onChange={(e) => setNewCohortId(e.target.value)}
+                    onChange={(e) => setNewCohortId(e.target.value?.toUpperCase())}
                     className="col-span-3"
                     placeholder="VD: K2024"
                   />

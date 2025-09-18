@@ -64,7 +64,7 @@ CREATE TABLE phong_hoc (
 CREATE TABLE hoc_ky (
     ma_hk NVARCHAR(10) PRIMARY KEY,                 -- Mã học kỳ
     ten_hk NVARCHAR(50) NOT NULL,               -- Tên học kỳ (Ví dụ: Học kỳ 1, Học kỳ 2)
-    nam_hoc NVARCHAR(20) NOT NULL,              -- Năm học (Ví dụ: 2024-2025)
+    nam_hoc NVARCHAR(20) NOT NULL,              -- Năm học (Ví dụ: 2024, 2025)
     ngay_bat_dau DATE NOT NULL,                 -- Ngày bắt đầu học kỳ
     ngay_ket_thuc DATE NOT NULL                 -- Ngày kết thúc học kỳ
 );
@@ -76,9 +76,9 @@ CREATE TABLE mon_hoc (
     ma_mh NVARCHAR(20) PRIMARY KEY,                 -- Mã môn học
     ten_mh NVARCHAR(100) NOT NULL,              -- Tên môn học
     so_tin_chi INT NOT NULL CHECK (so_tin_chi > 0), -- Số tín chỉ > 0
-    ma_khoa NVARCHAR(10) NOT NULL,                  -- Môn học thuộc khoa nào
+    ma_chuyen_nganh NVARCHAR(10) NOT NULL,                  -- Môn học thuộc khoa nào
     loai NVARCHAR(20) NOT NULL CHECK (loai IN (N'cơ bản', N'chuyên ngành')), -- Loại môn học
-    FOREIGN KEY (ma_khoa) REFERENCES khoa(ma_khoa)
+    FOREIGN KEY (ma_chuyen_nganh) REFERENCES chuyen_nganh(ma_chuyen_nganh)
 );
 
 -- ===============================================

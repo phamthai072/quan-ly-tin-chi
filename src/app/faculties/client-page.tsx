@@ -156,6 +156,8 @@ export function FacultiesClientPage({
       });
       setReload((m) => !m);
       setDialog((m) => !m);
+      setNewFacultyId("");
+      setNewFacultyName("");
     } else {
       toast({
         title: "Thêm khoa thất bại",
@@ -234,7 +236,7 @@ export function FacultiesClientPage({
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Quản lý Khoa</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Quản lý Khoa đào tạo</h1>
         <Button
           onClick={(e) => {
             e.preventDefault();
@@ -349,18 +351,20 @@ export function FacultiesClientPage({
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
+                <div className="flex flex-col items-start gap-4">
                   <Label htmlFor="faculty-id" className="text-right">
-                    Mã khoa
+                    Mã khoa (<span className="text-xs">Mã khoa tối đa 2 ký tự</span> )
                   </Label>
                   <Input
                     id="faculty-id"
                     value={newFacultyId}
-                    onChange={(e) => setNewFacultyId(e.target.value)}
+                    maxLength={2}
+                    onChange={(e) => setNewFacultyId(e?.target?.value?.toLocaleUpperCase())}
                     className="col-span-3"
                   />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
+                  
+                <div className="flex flex-col items-start gap-4">
                   <Label htmlFor="faculty-name" className="text-right">
                     Tên khoa
                   </Label>

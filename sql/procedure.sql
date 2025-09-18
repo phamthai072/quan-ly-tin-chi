@@ -339,8 +339,8 @@ BEGIN
         SET @ma_mh = @ma_khoa + @ma_chuyen_nganh + @loai_mon + RIGHT('0000' + CAST(@so_thu_tu AS NVARCHAR(4)),4);
 
         -- Thêm môn học
-        INSERT INTO mon_hoc(ma_mh, ten_mh, so_tin_chi, ma_khoa, loai)
-        VALUES(@ma_mh, @ten_mh, @so_tin_chi, @ma_khoa, @loai);
+        INSERT INTO mon_hoc(ma_mh, ten_mh, so_tin_chi, ma_chuyen_nganh, loai)
+        VALUES(@ma_mh, @ten_mh, @so_tin_chi, @ma_chuyen_nganh, @loai);
 
         COMMIT TRANSACTION;
         SELECT @ma_mh AS ma_mh_tao_moi;

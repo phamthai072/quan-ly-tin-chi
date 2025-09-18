@@ -333,7 +333,7 @@ export function ClassroomsClientPage({ classrooms: initialClassrooms }: { classr
                   <Input
                     id="classroom-id"
                     value={newClassroomId}
-                    onChange={(e) => setNewClassroomId(e.target.value)}
+                    onChange={(e) => setNewClassroomId(e.target.value?.toLocaleUpperCase())}
                     className="col-span-3"
                   />
                 </div>

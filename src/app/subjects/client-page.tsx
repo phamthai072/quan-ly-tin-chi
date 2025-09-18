@@ -55,15 +55,14 @@ import { useApi } from "@/hooks/use-api";
 import { toast } from "@/hooks/use-toast";
 import { useRenderCount } from "@/hooks/useRenderCount";
 
-
 export function SubjectsClientPage({
   subjects: initialSubjects,
-  faculties: initialFaculties,
+  majors: initialMajors,
   allSubjects: initialAllSubjects,
   lecturers: initialLecturers,
 }: {
   subjects: Subject[];
-  faculties: Faculty[];
+  majors: any[];
   allSubjects: Subject[];
   lecturers: Lecturer[];
 }) {
@@ -74,21 +73,24 @@ export function SubjectsClientPage({
   const [dialog1, setDialog1] = React.useState(false);
   const [dialog2, setDialog2] = React.useState(false);
   const [subjects, setSubjects] = React.useState(initialSubjects);
-  const [faculties, setFaculties] = React.useState(initialFaculties);
+  const [majors, setMajors] = React.useState(initialMajors);
   const [allSubjects, setAllSubjects] = React.useState(initialAllSubjects);
   const [lecturers, setLecturers] = React.useState(initialLecturers);
   const [searchQuery, setSearchQuery] = React.useState("");
 
   const [newSubjectId, setNewSubjectId] = React.useState("");
   const [newSubjectName, setNewSubjectName] = React.useState("");
-  const [newSubjectCredits, setNewSubjectCredits] = React.useState<number | "">("");
-  const [newSubjectFaculty, setNewSubjectFaculty] = React.useState("");
+  const [newSubjectCredits, setNewSubjectCredits] = React.useState<number | "">(
+    ""
+  );
+  const [newSubjectMajor, setNewSubjectMajor] = React.useState("");
   const [newSubjectType, setNewSubjectType] = React.useState("");
 
   const [editingSubject, setEditingSubject] = React.useState<any | null>(null);
 
-  const getFacultyName = (facultyId: string) => {
-    return faculties.find((f) => f.ma_khoa === facultyId)?.ten_khoa || facultyId;
+  const getMajorName = (majorId: string) => {
+    const major = majors.find((m) => m.ma_chuyen_nganh === majorId);
+    return major ? `${major.ten_chuyen_nganh} (${major.ten_khoa})` : majorId;
   };
 
   const handleSearch = async () => {
@@ -100,10 +102,12 @@ export function SubjectsClientPage({
           "Content-Type": "application/json",
         },
         body: {
-          query: `SELECT mh.*, k.ten_khoa FROM mon_hoc mh 
-                   LEFT JOIN khoa k ON mh.ma_khoa = k.ma_khoa 
+          query: `SELECT mh.*, cn.ten_chuyen_nganh, cn.ma_chuyen_nganh, k.ten_khoa FROM mon_hoc mh 
+                   LEFT JOIN chuyen_nganh cn ON mh.ma_chuyen_nganh = cn.ma_chuyen_nganh 
+                   LEFT JOIN khoa k ON cn.ma_khoa = k.ma_khoa 
                    WHERE mh.ten_mh LIKE N'%${searchQuery}%' 
                    OR mh.ma_mh LIKE N'%${searchQuery}%' 
+                   OR cn.ten_chuyen_nganh LIKE N'%${searchQuery}%'
                    OR k.ten_khoa LIKE N'%${searchQuery}%'
                    OR mh.loai LIKE N'%${searchQuery}%'`,
         },
@@ -124,8 +128,9 @@ export function SubjectsClientPage({
           "Content-Type": "application/json",
         },
         body: {
-          query: `SELECT mh.*, k.ten_khoa FROM mon_hoc mh 
-                   LEFT JOIN khoa k ON mh.ma_khoa = k.ma_khoa
+          query: `SELECT mh.*, cn.ten_chuyen_nganh, k.ten_khoa, k.ma_khoa FROM mon_hoc mh 
+                   LEFT JOIN chuyen_nganh cn ON mh.ma_chuyen_nganh = cn.ma_chuyen_nganh 
+                   LEFT JOIN khoa k ON cn.ma_khoa = k.ma_khoa
                    ORDER BY mh.ma_mh`,
         },
       });
@@ -150,21 +155,23 @@ export function SubjectsClientPage({
           "Content-Type": "application/json",
         },
         body: {
-          query: `SELECT mh.*, k.ten_khoa FROM mon_hoc mh 
-                   LEFT JOIN khoa k ON mh.ma_khoa = k.ma_khoa
+          query: `SELECT mh.*, cn.ten_chuyen_nganh, k.ten_khoa FROM mon_hoc mh 
+                   LEFT JOIN chuyen_nganh cn ON mh.ma_chuyen_nganh = cn.ma_chuyen_nganh 
+                   LEFT JOIN khoa k ON cn.ma_khoa = k.ma_khoa
                    ORDER BY mh.ma_mh`,
         },
       });
 
-      // Fetch faculties
-      const facultiesResponse = await apiCall({
+      // Fetch majors (chuyen_nganh) with faculty info
+      const majorsResponse = await apiCall({
         endpoint: `/api/query`,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: {
-          query: "SELECT * FROM khoa",
+          query:
+            "SELECT cn.*, k.ten_khoa FROM chuyen_nganh cn LEFT JOIN khoa k ON cn.ma_khoa = k.ma_khoa ORDER BY k.ten_khoa, cn.ten_chuyen_nganh",
         },
       });
 
@@ -181,11 +188,14 @@ export function SubjectsClientPage({
       });
 
       console.log("subjects response: ", subjectsResponse);
-      console.log("faculties response: ", facultiesResponse);
+      console.log("majors response: ", majorsResponse);
       console.log("lecturers response: ", lecturersResponse);
 
       if (subjectsResponse?.success) {
-        console.log("subjects success: ", subjectsResponse?.result?.recordsets[0]);
+        console.log(
+          "subjects success: ",
+          subjectsResponse?.result?.recordsets[0]
+        );
         setSubjects(subjectsResponse?.result?.recordsets[0]);
         setAllSubjects(subjectsResponse?.result?.recordsets[0]);
       } else {
@@ -193,16 +203,19 @@ export function SubjectsClientPage({
         console.error(subjectsResponse.error);
       }
 
-      if (facultiesResponse?.success) {
-        console.log("faculties success: ", facultiesResponse?.result?.recordsets[0]);
-        setFaculties(facultiesResponse?.result?.recordsets[0]);
+      if (majorsResponse?.success) {
+        console.log("majors success: ", majorsResponse?.result?.recordsets[0]);
+        setMajors(majorsResponse?.result?.recordsets[0]);
       } else {
-        console.log("faculties error: ", facultiesResponse?.error);
-        console.error(facultiesResponse.error);
+        console.log("majors error: ", majorsResponse?.error);
+        console.error(majorsResponse.error);
       }
 
       if (lecturersResponse?.success) {
-        console.log("lecturers success: ", lecturersResponse?.result?.recordsets[0]);
+        console.log(
+          "lecturers success: ",
+          lecturersResponse?.result?.recordsets[0]
+        );
         setLecturers(lecturersResponse?.result?.recordsets[0]);
       } else {
         console.log("lecturers error: ", lecturersResponse?.error);
@@ -221,8 +234,10 @@ export function SubjectsClientPage({
         "Content-Type": "application/json",
       },
       body: {
-        query: `INSERT INTO mon_hoc (ma_mh, ten_mh, so_tin_chi, ma_khoa, loai) 
-                 VALUES (N'${newSubjectId?.toUpperCase()?.trim()}', N'${newSubjectName?.trim()}', ${newSubjectCredits}, N'${newSubjectFaculty}', N'${newSubjectType}')`,
+        query: `INSERT INTO mon_hoc (ma_mh, ten_mh, so_tin_chi, ma_chuyen_nganh, loai) 
+                 VALUES (N'${newSubjectId
+                   ?.toUpperCase()
+                   ?.trim()}', N'${newSubjectName?.trim()}', ${newSubjectCredits}, N'${newSubjectMajor}', N'${newSubjectType}')`,
       },
     });
     console.log("response: ", response);
@@ -236,7 +251,7 @@ export function SubjectsClientPage({
       setNewSubjectId("");
       setNewSubjectName("");
       setNewSubjectCredits("");
-      setNewSubjectFaculty("");
+      setNewSubjectMajor("");
       setNewSubjectType("");
     } else {
       toast({
@@ -262,7 +277,7 @@ export function SubjectsClientPage({
       },
       body: {
         query: `UPDATE mon_hoc 
-                 SET ten_mh = N'${editingSubject.ten_mh}', so_tin_chi = ${editingSubject.so_tin_chi}, ma_khoa = N'${editingSubject.ma_khoa}', loai = N'${editingSubject.loai}' 
+                 SET ten_mh = N'${editingSubject.ten_mh}', so_tin_chi = ${editingSubject.so_tin_chi}, ma_chuyen_nganh = N'${editingSubject.ma_chuyen_nganh}', loai = N'${editingSubject.loai}' 
                  WHERE ma_mh = N'${editingSubject.ma_mh}'`,
       },
     });
@@ -351,7 +366,7 @@ export function SubjectsClientPage({
                 <TableHead>Mã môn học</TableHead>
                 <TableHead>Tên môn học</TableHead>
                 <TableHead>Số tín chỉ</TableHead>
-                <TableHead>Khoa</TableHead>
+                <TableHead>Chuyên ngành - Khoa</TableHead>
                 <TableHead>Loại môn</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
@@ -368,16 +383,22 @@ export function SubjectsClientPage({
               ) : subjects?.length > 0 ? (
                 subjects.map((subject: any) => (
                   <TableRow key={subject.ma_mh}>
-                    <TableCell className="font-medium">{subject.ma_mh}</TableCell>
+                    <TableCell className="font-medium">
+                      {subject.ma_mh}
+                    </TableCell>
                     <TableCell>{subject.ten_mh}</TableCell>
                     <TableCell>{subject.so_tin_chi}</TableCell>
                     <TableCell>
-                      {subject.ten_khoa || getFacultyName(subject.ma_khoa)}
+                      {subject.ten_chuyen_nganh
+                        ? `${subject.ten_chuyen_nganh} - ${subject.ten_khoa}`
+                        : getMajorName(subject.ma_chuyen_nganh)}
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant={
-                          subject.loai === "chuyên ngành" ? "default" : "secondary"
+                          subject.loai === "chuyên ngành"
+                            ? "default"
+                            : "secondary"
                         }
                       >
                         {subject.loai}
@@ -437,7 +458,7 @@ export function SubjectsClientPage({
                 setNewSubjectId("");
                 setNewSubjectName("");
                 setNewSubjectCredits("");
-                setNewSubjectFaculty("");
+                setNewSubjectMajor("");
                 setNewSubjectType("");
               }
             }}
@@ -455,9 +476,10 @@ export function SubjectsClientPage({
                     Mã môn học
                   </Label>
                   <Input
+                    required
                     id="subject-id"
                     value={newSubjectId}
-                    onChange={(e) => setNewSubjectId(e.target.value)}
+                    onChange={(e) => setNewSubjectId(e.target.value?.toUpperCase())}
                     className="col-span-3"
                     placeholder="VD: CNTT101"
                   />
@@ -492,20 +514,23 @@ export function SubjectsClientPage({
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="subject-faculty" className="text-right">
-                    Khoa
+                  <Label htmlFor="subject-major" className="text-right">
+                    Chuyên ngành
                   </Label>
                   <Select
-                    value={newSubjectFaculty}
-                    onValueChange={setNewSubjectFaculty}
+                    value={newSubjectMajor}
+                    onValueChange={setNewSubjectMajor}
                   >
                     <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Chọn khoa" />
+                      <SelectValue placeholder="Chọn chuyên ngành" />
                     </SelectTrigger>
                     <SelectContent>
-                      {faculties.map((faculty) => (
-                        <SelectItem key={faculty.ma_khoa} value={faculty.ma_khoa}>
-                          {faculty.ten_khoa}
+                      {majors.map((major: any) => (
+                        <SelectItem
+                          key={major.ma_chuyen_nganh}
+                          value={major.ma_chuyen_nganh}
+                        >
+                          {major.ten_chuyen_nganh} ({major.ten_khoa})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -515,7 +540,10 @@ export function SubjectsClientPage({
                   <Label htmlFor="subject-type" className="text-right">
                     Loại môn học
                   </Label>
-                  <Select value={newSubjectType} onValueChange={setNewSubjectType}>
+                  <Select
+                    value={newSubjectType}
+                    onValueChange={setNewSubjectType}
+                  >
                     <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Chọn loại môn học" />
                     </SelectTrigger>
@@ -583,7 +611,10 @@ export function SubjectsClientPage({
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="subject-credits-edit" className="text-right">
+                    <Label
+                      htmlFor="subject-credits-edit"
+                      className="text-right"
+                    >
                       Số tín chỉ
                     </Label>
                     <Input
@@ -600,22 +631,28 @@ export function SubjectsClientPage({
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="subject-faculty-edit" className="text-right">
-                      Khoa
+                    <Label htmlFor="subject-major-edit" className="text-right">
+                      Chuyên ngành
                     </Label>
                     <Select
-                      value={editingSubject.ma_khoa}
+                      value={editingSubject.ma_chuyen_nganh}
                       onValueChange={(value) =>
-                        setEditingSubject({ ...editingSubject, ma_khoa: value })
+                        setEditingSubject({
+                          ...editingSubject,
+                          ma_chuyen_nganh: value,
+                        })
                       }
                     >
                       <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Chọn khoa" />
+                        <SelectValue placeholder="Chọn chuyên ngành" />
                       </SelectTrigger>
                       <SelectContent>
-                        {faculties.map((faculty) => (
-                          <SelectItem key={faculty.ma_khoa} value={faculty.ma_khoa}>
-                            {faculty.ten_khoa}
+                        {majors.map((major: any) => (
+                          <SelectItem
+                            key={major.ma_chuyen_nganh}
+                            value={major.ma_chuyen_nganh}
+                          >
+                            {major.ten_chuyen_nganh} ({major.ten_khoa})
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -636,7 +673,9 @@ export function SubjectsClientPage({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="cơ bản">Cơ bản</SelectItem>
-                        <SelectItem value="chuyên ngành">Chuyên ngành</SelectItem>
+                        <SelectItem value="chuyên ngành">
+                          Chuyên ngành
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -676,7 +715,9 @@ export function SubjectsClientPage({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction onClick={onDelete}>Tiếp tục</AlertDialogAction>
+                <AlertDialogAction onClick={onDelete}>
+                  Tiếp tục
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

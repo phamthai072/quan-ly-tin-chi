@@ -48,9 +48,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn, formatDate, formatDateForSQL } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { useApi } from "@/hooks/use-api";
 import { toast } from "@/hooks/use-toast";
@@ -80,7 +83,9 @@ export function SemestersClientPage({
     Date | undefined
   >();
 
-  const [editingSemester, setEditingSemester] = React.useState<any | null>(null);
+  const [editingSemester, setEditingSemester] = React.useState<any | null>(
+    null
+  );
 
   const handleSearch = async () => {
     if (searchQuery) {
@@ -160,10 +165,28 @@ export function SemestersClientPage({
       });
       return;
     }
-
-    const formatDateForSQL = (date: Date) => {
-      return date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-    };
+    if (
+      !newSemesterId ||
+      newSemesterId.trim() === "" ||
+      !newSemesterName ||
+      newSemesterName.trim() === "" ||
+      !newSemesterSchoolYear ||
+      newSemesterSchoolYear.trim() === ""
+    ) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập đầy đủ thông tin",
+      });
+      return;
+    }
+    // start date must be before end date
+    if (newSemesterStartDate.getTime() >= newSemesterEndDate.getTime()) {
+      toast({
+        title: "Lỗi",
+        description: "Ngày bắt đầu phải trước ngày kết thúc",
+      });
+      return;
+    }
 
     const response = await apiCall({
       endpoint: `/api/query`,
@@ -173,7 +196,11 @@ export function SemestersClientPage({
       },
       body: {
         query: `INSERT INTO hoc_ky (ma_hk, ten_hk, nam_hoc, ngay_bat_dau, ngay_ket_thuc) 
-                 VALUES (N'${newSemesterId?.toUpperCase()?.trim()}', N'${newSemesterName?.trim()}', N'${newSemesterSchoolYear?.trim()}', '${formatDateForSQL(newSemesterStartDate)}', '${formatDateForSQL(newSemesterEndDate)}')`,
+                 VALUES (N'${newSemesterId
+                   ?.toUpperCase()
+                   ?.trim()}', N'${newSemesterName?.trim()}', N'${newSemesterSchoolYear?.trim()}', '${formatDateForSQL(
+          newSemesterStartDate
+        )}', '${formatDateForSQL(newSemesterEndDate)}')`,
       },
     });
     console.log("response: ", response);
@@ -213,12 +240,19 @@ export function SemestersClientPage({
       return;
     }
 
-    const formatDateForSQL = (date: Date | string) => {
-      if (typeof date === 'string') {
-        return new Date(date).toISOString().split('T')[0];
-      }
-      return date.toISOString().split('T')[0];
-    };
+    // start date must be before end date
+    if (
+      editingSemester.ngay_bat_dau &&
+      editingSemester.ngay_ket_thuc &&
+      editingSemester.ngay_bat_dau?.getTime() >=
+        editingSemester.ngay_ket_thuc?.getTime()
+    ) {
+      toast({
+        title: "Lỗi",
+        description: "Ngày bắt đầu phải trước ngày kết thúc",
+      });
+      return;
+    }
 
     const response = await apiCall({
       endpoint: `/api/query`,
@@ -228,7 +262,13 @@ export function SemestersClientPage({
       },
       body: {
         query: `UPDATE hoc_ky 
-                 SET ten_hk = N'${editingSemester.ten_hk}', nam_hoc = N'${editingSemester.nam_hoc}', ngay_bat_dau = '${formatDateForSQL(editingSemester.ngay_bat_dau)}', ngay_ket_thuc = '${formatDateForSQL(editingSemester.ngay_ket_thuc)}' 
+                 SET ten_hk = N'${editingSemester.ten_hk}', nam_hoc = N'${
+          editingSemester.nam_hoc
+        }', ngay_bat_dau = '${formatDateForSQL(
+          editingSemester.ngay_bat_dau
+        )}', ngay_ket_thuc = '${formatDateForSQL(
+          editingSemester.ngay_ket_thuc
+        )}' 
                  WHERE ma_hk = N'${editingSemester.ma_hk}'`,
       },
     });
@@ -279,11 +319,6 @@ export function SemestersClientPage({
         description: response?.error || "Lỗi hệ thống",
       });
     }
-  };
-
-  const formatDate = (dateInput: Date | string) => {
-    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-    return format(date, "dd/MM/yyyy");
   };
 
   return (
@@ -339,7 +374,9 @@ export function SemestersClientPage({
               ) : semesters?.length > 0 ? (
                 semesters.map((semester: any) => (
                   <TableRow key={semester.ma_hk}>
-                    <TableCell className="font-medium">{semester.ma_hk}</TableCell>
+                    <TableCell className="font-medium">
+                      {semester.ma_hk}
+                    </TableCell>
                     <TableCell>{semester.ten_hk}</TableCell>
                     <TableCell>{semester.nam_hoc}</TableCell>
                     <TableCell>{formatDate(semester.ngay_bat_dau)}</TableCell>
@@ -422,9 +459,12 @@ export function SemestersClientPage({
                   <Input
                     id="semester-id"
                     value={newSemesterId}
-                    onChange={(e) => setNewSemesterId(e.target.value)}
+                    onChange={(e) =>
+                      setNewSemesterId(e.target.value?.toUpperCase())
+                    }
                     className="col-span-3"
-                    placeholder="VD: HK1-2024"
+                    placeholder="VD: 2025HK1"
+                    required
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -445,10 +485,13 @@ export function SemestersClientPage({
                   </Label>
                   <Input
                     id="semester-year"
+                    type="number"
+                    min={2000}
+                    max={2100}
                     value={newSemesterSchoolYear}
                     onChange={(e) => setNewSemesterSchoolYear(e.target.value)}
                     className="col-span-3"
-                    placeholder="VD: 2024-2025"
+                    placeholder="VD: 2024, 2025"
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -465,9 +508,11 @@ export function SemestersClientPage({
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newSemesterStartDate
-                          ? format(newSemesterStartDate, "PPP")
-                          : <span>Chọn ngày</span>}
+                        {newSemesterStartDate ? (
+                          formatDate(newSemesterStartDate)
+                        ) : (
+                          <span>Chọn ngày</span>
+                        )}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -494,9 +539,11 @@ export function SemestersClientPage({
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newSemesterEndDate
-                          ? format(newSemesterEndDate, "PPP")
-                          : <span>Chọn ngày</span>}
+                        {newSemesterEndDate ? (
+                          formatDate(newSemesterEndDate)
+                        ) : (
+                          <span>Chọn ngày</span>
+                        )}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -589,13 +636,16 @@ export function SemestersClientPage({
                           variant={"outline"}
                           className={cn(
                             "col-span-3 justify-start text-left font-normal",
-                            !editingSemester.ngay_bat_dau && "text-muted-foreground"
+                            !editingSemester.ngay_bat_dau &&
+                              "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {editingSemester.ngay_bat_dau
-                            ? format(editingSemester.ngay_bat_dau, "PPP")
-                            : <span>Chọn ngày</span>}
+                          {editingSemester.ngay_bat_dau ? (
+                            formatDate(editingSemester.ngay_bat_dau)
+                          ) : (
+                            <span>Chọn ngày</span>
+                          )}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
@@ -621,13 +671,16 @@ export function SemestersClientPage({
                           variant={"outline"}
                           className={cn(
                             "col-span-3 justify-start text-left font-normal",
-                            !editingSemester.ngay_ket_thuc && "text-muted-foreground"
+                            !editingSemester.ngay_ket_thuc &&
+                              "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {editingSemester.ngay_ket_thuc
-                            ? format(editingSemester.ngay_ket_thuc, "PPP")
-                            : <span>Chọn ngày</span>}
+                          {editingSemester.ngay_ket_thuc ? (
+                            formatDate(editingSemester.ngay_ket_thuc)
+                          ) : (
+                            <span>Chọn ngày</span>
+                          )}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
@@ -680,7 +733,9 @@ export function SemestersClientPage({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction onClick={onDelete}>Tiếp tục</AlertDialogAction>
+                <AlertDialogAction onClick={onDelete}>
+                  Tiếp tục
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
