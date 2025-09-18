@@ -1,6 +1,148 @@
 -- chặn đăng ký vào học kỳ cũ hoặc mới
+
+-- tạo mã gv
+CREATE TRIGGER trg_gv_gen_ma
+ON giang_vien
+INSTEAD OF INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @stt INT;
+    DECLARE @new_ma_gv NVARCHAR(20);
+
+    -- Lấy số thứ tự tiếp theo
+    SELECT @stt = ISNULL(MAX(CAST(RIGHT(ma_gv, LEN(ma_gv)-2) AS INT)), 0) + 1
+    FROM giang_vien;
+
+    -- Tạo mã giảng viên
+    SET @new_ma_gv = 'GV' + RIGHT('000' + CAST(@stt AS NVARCHAR(4)), 4);
+
+    -- Chèn bản ghi
+    INSERT INTO giang_vien(ma_gv, ho_ten_gv, ma_khoa, don_gia)
+    SELECT @new_ma_gv, ho_ten_gv, ma_khoa, don_gia FROM inserted;
+END;
+
+
+
 -- tạo mã sv
+-- Mã sinh viên phải thể hiện được thông tin về khóa đào tạo, khoa đào tạo, loại hình đào tạo. 
+-- CD D25 CN 001 - Cao Dang = CD
+-- DH D26 CN 001 - Dai Hoc = DH
+
+
+IF OBJECT_ID('trg_sinh_vien_gen_ma_sv', 'TR') IS NOT NULL
+    DROP TRIGGER trg_sinh_vien_gen_ma_sv;
+GO
+
+
+CREATE TRIGGER trg_sinh_vien_gen_ma_sv
+ON sinh_vien
+INSTEAD OF INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @ma_chuyen_nganh NVARCHAR(10);
+    DECLARE @ma_khoa NVARCHAR(10);
+    DECLARE @ma_khoa_hoc NVARCHAR(10);
+    DECLARE @he_dao_tao NVARCHAR(20);
+    DECLARE @prefix NVARCHAR(50);
+    DECLARE @stt INT;
+    DECLARE @new_ma_sv NVARCHAR(50);
+
+    -- Lấy thông tin bản ghi (giả định insert 1 row)
+    SELECT TOP 1 
+        @ma_chuyen_nganh = i.ma_chuyen_nganh,
+        @ma_khoa_hoc = i.ma_khoa_hoc,
+        @he_dao_tao = i.he_dao_tao
+    FROM inserted i;
+
+    -- Lấy mã khoa từ chuyên ngành
+    SELECT @ma_khoa = ma_khoa
+    FROM chuyen_nganh
+    WHERE ma_chuyen_nganh = @ma_chuyen_nganh;
+
+    -- Mapping hệ đào tạo
+    DECLARE @ma_he NVARCHAR(5);
+    SET @ma_he = CASE 
+                    WHEN @he_dao_tao = N'cao đẳng' THEN 'CD'
+                    WHEN @he_dao_tao = N'đại học' THEN 'DH'
+                    ELSE 'KH' -- fallback
+                 END
+
+    -- Tạo prefix: CD + D25 + CNTT
+    SET @prefix = @ma_he + @ma_khoa_hoc + @ma_khoa
+
+    -- Lấy số thứ tự max
+    SELECT @stt = ISNULL(MAX(CAST(RIGHT(ma_sv, 3) AS INT)), 0) + 1
+    FROM sinh_vien
+    WHERE ma_sv LIKE @prefix + '%'
+
+    -- Ghép mã SV: VD "DH D26 CNTT 001" -> "DHD26CNTT001"
+    SET @new_ma_sv = @prefix + RIGHT('000' + CAST(@stt AS NVARCHAR(3)), 3)
+
+    -- Thực hiện insert
+    INSERT INTO sinh_vien(ma_sv, ma_chuyen_nganh, ma_khoa_hoc, ho_ten_sv, he_dao_tao)
+    SELECT @new_ma_sv, ma_chuyen_nganh, ma_khoa_hoc, ho_ten_sv, he_dao_tao
+    FROM inserted
+END;
+GO
+
+
+
+
 -- tạo mã mh
+-- Mã của môn học phải thể hiện được thông tin về chuyên ngành và khoa quản lý. 
+-- mã mh = mã chuyên nganh + sst (001 to 999) + mã khoa 
+
+IF OBJECT_ID('trg_mon_hoc_gen_ma_mh', 'TR') IS NOT NULL
+    DROP TRIGGER trg_mon_hoc_gen_ma_mh;
+GO
+
+CREATE TRIGGER trg_mon_hoc_gen_ma_mh
+ON mon_hoc
+INSTEAD OF INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @ma_khoa NVARCHAR(10);
+    DECLARE @ma_chuyen_nganh NVARCHAR(10);
+    DECLARE @stt INT;
+    DECLARE @prefix NVARCHAR(50);
+    DECLARE @new_ma_mh NVARCHAR(50);
+
+    -- Lấy thông tin bản ghi được insert (giả định 1 row/lần)
+    SELECT TOP 1 
+        @ma_chuyen_nganh = i.ma_chuyen_nganh
+    FROM inserted i;
+
+    -- Lấy mã khoa từ chuyên ngành
+    SELECT @ma_khoa = ma_khoa
+    FROM chuyen_nganh
+    WHERE ma_chuyen_nganh = @ma_chuyen_nganh;
+
+    -- Lấy số thứ tự lớn nhất trong cùng chuyên ngành + khoa
+    SELECT @stt = ISNULL(MAX(CAST(SUBSTRING(ma_mh, LEN(@ma_chuyen_nganh) + 1, 3) AS INT)), 0) + 1
+    FROM mon_hoc
+    WHERE ma_mh LIKE @ma_chuyen_nganh + '%' + @ma_khoa;
+
+    -- Ghép mã môn học: VD "HTTT001CNTT"
+    SET @new_ma_mh = @ma_chuyen_nganh 
+                     + RIGHT('000' + CAST(@stt AS NVARCHAR(3)), 3) 
+                     + @ma_khoa;
+
+    -- Thực hiện insert
+    INSERT INTO mon_hoc(ma_mh, ten_mh, so_tin_chi, ma_chuyen_nganh, loai)
+    SELECT @new_ma_mh, ten_mh, so_tin_chi, ma_chuyen_nganh, loai
+    FROM inserted;
+END;
+GO
+
+
+
+
 
 USE QuanLyTinChi;
 GO
@@ -144,80 +286,3 @@ BEGIN
 END;
 GO
 
-
--------------------------------------------------
--- 3. Trigger chống xóa Lớp
---    - Không cho xóa nếu còn Sinh viên trong lớp
--------------------------------------------------
-IF OBJECT_ID('trg_no_delete_lop', 'TR') IS NOT NULL
-    DROP TRIGGER trg_no_delete_lop;
-GO
-
-CREATE TRIGGER trg_no_delete_lop
-ON lop
-INSTEAD OF DELETE
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    -- Nếu còn sinh viên thuộc lớp
-    IF EXISTS (
-        SELECT 1
-        FROM deleted d
-        JOIN sinh_vien sv ON d.ma_lop = sv.ma_lop
-    )
-    BEGIN
-        RAISERROR (N'Không thể xóa Lớp vì còn Sinh viên trong lớp.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END
-
-    DELETE FROM lop
-    WHERE ma_lop IN (SELECT ma_lop FROM deleted);
-END;
-GO
-
-
--------------------------------------------------
--- 4. Trigger chống xóa Môn học
---    - Không cho xóa nếu còn Kết quả học tập hoặc Sinh viên đã đăng ký
--------------------------------------------------
-IF OBJECT_ID('trg_no_delete_mon_hoc', 'TR') IS NOT NULL
-    DROP TRIGGER trg_no_delete_mon_hoc;
-GO
-
-CREATE TRIGGER trg_no_delete_mon_hoc
-ON mon_hoc
-INSTEAD OF DELETE
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    -- Nếu còn kết quả học tập liên quan đến môn học
-    IF EXISTS (
-        SELECT 1
-        FROM deleted d
-        JOIN ket_qua kq ON d.ma_mh = kq.ma_mh
-    )
-    BEGIN
-        RAISERROR (N'Không thể xóa Môn học vì còn Kết quả học tập liên quan.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END
-
-    -- Nếu còn đăng ký học của sinh viên
-    IF EXISTS (
-        SELECT 1
-        FROM deleted d
-        JOIN dang_ky_hoc dk ON d.ma_mh = dk.ma_mh
-    )
-    BEGIN
-        RAISERROR (N'Không thể xóa Môn học vì còn Sinh viên đang đăng ký.', 16, 1);
-        ROLLBACK TRANSACTION;
-        RETURN;
-    END
-
-    DELETE FROM mon_hoc
-    WHERE ma_mh IN (SELECT ma_mh FROM deleted);
-END;
-GO

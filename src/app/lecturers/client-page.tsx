@@ -61,8 +61,10 @@ type LecturerDB = {
 
 export function LecturersClientPage({
   lecturers: initialLecturers,
+  faculties: initialFaculties,
 }: {
   lecturers: any[];
+  faculties: any[];
 }) {
   const renderCount = useRenderCount();
   const { apiCall, isLoading } = useApi();
@@ -71,6 +73,7 @@ export function LecturersClientPage({
   const [dialog1, setDialog1] = React.useState(false);
   const [dialog2, setDialog2] = React.useState(false);
   const [lecturers, setLecturers] = React.useState(initialLecturers);
+  const [faculties, setFaculties] = React.useState(initialFaculties);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [newLecturerId, setNewLecturerId] = React.useState("");
   const [newLecturerName, setNewLecturerName] = React.useState("");
@@ -134,7 +137,8 @@ export function LecturersClientPage({
 
   React.useEffect(() => {
     const fetchData = async () => {
-      const response = await apiCall({
+      // Fetch lecturers
+      const lecturersResponse = await apiCall({
         endpoint: `/api/query`,
         method: "POST",
         headers: {
@@ -147,13 +151,35 @@ export function LecturersClientPage({
         },
       });
 
-      console.log("response: ", response);
-      if (response?.success) {
-        console.log("success: ", response?.result?.recordsets[0]);
-        setLecturers(response?.result?.recordsets[0]);
+      // Fetch faculties
+      const facultiesResponse = await apiCall({
+        endpoint: `/api/query`,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: {
+          query: "SELECT * FROM khoa ORDER BY ten_khoa",
+        },
+      });
+
+      console.log("lecturers response: ", lecturersResponse);
+      console.log("faculties response: ", facultiesResponse);
+
+      if (lecturersResponse?.success) {
+        console.log("lecturers success: ", lecturersResponse?.result?.recordsets[0]);
+        setLecturers(lecturersResponse?.result?.recordsets[0]);
       } else {
-        console.log("error: ", response?.error);
-        console.error(response.error);
+        console.log("lecturers error: ", lecturersResponse?.error);
+        console.error(lecturersResponse.error);
+      }
+
+      if (facultiesResponse?.success) {
+        console.log("faculties success: ", facultiesResponse?.result?.recordsets[0]);
+        setFaculties(facultiesResponse?.result?.recordsets[0]);
+      } else {
+        console.log("faculties error: ", facultiesResponse?.error);
+        console.error(facultiesResponse.error);
       }
     };
 
@@ -161,6 +187,17 @@ export function LecturersClientPage({
   }, [reload]);
 
   const onCreate = async () => {
+    if (
+      !newLecturerName ||
+      !newLecturerFaculty ||
+      !newLecturerUnitPrice
+    ) {
+      toast({
+        title: "Vui lòng điền đầy đủ thông tin",
+      });
+      return;
+    }
+
     const response = await apiCall({
       endpoint: `/api/query`,
       method: "POST",
@@ -168,13 +205,13 @@ export function LecturersClientPage({
         "Content-Type": "application/json",
       },
       body: {
-        query: `INSERT INTO giang_vien (ma_gv, ho_ten_gv, ma_khoa, don_gia) 
-                 VALUES (N'${newLecturerId?.toUpperCase()?.trim()}', 
-                         N'${newLecturerName?.trim()}', 
+        query: `INSERT INTO giang_vien (ho_ten_gv, ma_khoa, don_gia) 
+                 VALUES (N'${newLecturerName?.trim()}', 
                          N'${newLecturerFaculty?.trim()}', 
                          ${newLecturerUnitPrice})`,
       },
     });
+
     console.log("response: ", response);
     if (response?.success) {
       console.log("success: ", response?.result?.recordsets[0]);
@@ -394,7 +431,7 @@ export function LecturersClientPage({
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
+                {/* <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="lecturer-id" className="text-right">
                     Mã GV
                   </Label>
@@ -404,7 +441,7 @@ export function LecturersClientPage({
                     onChange={(e) => setNewLecturerId(e.target.value)}
                     className="col-span-3"
                   />
-                </div>
+                </div> */}
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="lecturer-name" className="text-right">
                     Họ và tên
@@ -428,10 +465,11 @@ export function LecturersClientPage({
                       <SelectValue placeholder="Chọn khoa" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="CNTT">Công nghệ thông tin</SelectItem>
-                      <SelectItem value="ATTT">An toàn thông tin</SelectItem>
-                      <SelectItem value="VT">Viễn thông</SelectItem>
-                      <SelectItem value="DT">Điện tử</SelectItem>
+                      {faculties.map((faculty: any) => (
+                        <SelectItem key={faculty.ma_khoa} value={faculty.ma_khoa}>
+                          {faculty.ten_khoa}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

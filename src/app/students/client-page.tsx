@@ -202,6 +202,19 @@ export function StudentsClientPage({
   }, [reload]);
 
   const onCreate = async () => {
+    if (
+      !newStudentName ||
+      !newStudentMajor ||
+      !newStudentCohort ||
+      !newStudentProgram
+    ) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập đầy đủ thông tin",
+      });
+      return;
+    }
+
     const response = await apiCall({
       endpoint: `/api/query`,
       method: "POST",
@@ -209,14 +222,14 @@ export function StudentsClientPage({
         "Content-Type": "application/json",
       },
       body: {
-        query: `INSERT INTO sinh_vien (ma_sv, ho_ten_sv, ma_chuyen_nganh, ma_khoa_hoc, he_dao_tao) 
-                 VALUES (N'${newStudentId?.toUpperCase()?.trim()}', 
-                         N'${newStudentName?.trim()}', 
+        query: `INSERT INTO sinh_vien (ho_ten_sv, ma_chuyen_nganh, ma_khoa_hoc, he_dao_tao) 
+                 VALUES (N'${newStudentName?.trim()}', 
                          N'${newStudentMajor?.trim()}', 
                          N'${newStudentCohort?.trim()}', 
                          N'${newStudentProgram?.trim()}')`,
       },
     });
+
     console.log("response: ", response);
     if (response?.success) {
       console.log("success: ", response?.result?.recordsets[0]);
@@ -431,17 +444,18 @@ export function StudentsClientPage({
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
+                {/* <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="student-id" className="text-right">
                     Mã SV
                   </Label>
                   <Input
+                    disabled
                     id="student-id"
                     value={newStudentId}
                     onChange={(e) => setNewStudentId(e.target.value)}
                     className="col-span-3"
                   />
-                </div>
+                </div> */}
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="student-name" className="text-right">
                     Họ và tên
@@ -595,7 +609,7 @@ export function StudentsClientPage({
                     <Label htmlFor="student-program-edit" className="text-right">
                       Hệ đào tạo
                     </Label>
-                    <Select
+                    <Select disabled
                       value={editingStudent.he_dao_tao}
                       onValueChange={(value) =>
                         setEditingStudent({
