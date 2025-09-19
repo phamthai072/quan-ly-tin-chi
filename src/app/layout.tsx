@@ -6,8 +6,8 @@ import { LoggerProvider } from '@/contexts/logger-context';
 import { Logger } from '@/components/logger/logger';
 
 export const metadata: Metadata = {
-  title: 'Tín Chỉ',
-  description: 'Hệ thống quản lý tín chỉ',
+  title: 'Quản lý tín chỉ',
+  description: 'Đề tài 8 - Lớp M25CQIS02',
 };
 
 export default function RootLayout({
