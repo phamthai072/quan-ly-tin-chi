@@ -5,6 +5,7 @@ import {
 } from '@/components/ui/sidebar';
 import { NavMenu } from './nav-menu';
 import { BookOpenCheck } from 'lucide-react';
+import { metadata } from '@/app/layout';
 
 export function AppSidebar() {
   return (
@@ -14,10 +15,10 @@ export function AppSidebar() {
            <BookOpenCheck className="w-8 h-8 text-primary" />
           <div className="group-data-[collapsible=icon]:hidden">
             <h2 className="font-semibold text-lg tracking-tight text-primary">
-              Tín Chỉ
+              {`${metadata?.title || 'Tín chỉ'}`?.toUpperCase()}
             </h2>
             <p className="text-xs text-muted-foreground">
-              Hệ thống quản lý tín chỉ
+              {`${metadata?.description || 'Hệ thống quản lý tín chỉ'}`}
             </p>
           </div>
         </div>
