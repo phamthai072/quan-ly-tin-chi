@@ -1,27 +1,21 @@
 "use client";
 
-import SyntaxHighlighter from "react-syntax-highlighter";
-import {
-  darcula,
-  docco,
-  far,
-} from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { useLogger, LogEntry } from "@/contexts/logger-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
+import { LogEntry, useLogger } from "@/contexts/logger-context";
 import { cn } from "@/lib/utils";
 import {
-  Database,
   ChevronDown,
   ChevronUp,
-  X,
-  LoaderCircle,
+  Database,
   Maximize,
   Minimize,
+  X,
 } from "lucide-react";
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 const LogItem = ({ log }: { log: LogEntry }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -49,21 +43,11 @@ const LogItem = ({ log }: { log: LogEntry }) => {
   return (
     <div className="p-2 border-b border-border/50 text-xs font-mono">
       <div
-        className="flex items-center gap-2 cursor-pointer max-h-80 overflow-y-auto"
+        className="flex items-center gap-2 cursor-pointer overflow-y-auto"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="font-bold w-20">{log.timestamp}</span>
-        {/* <Badge className={cn("pl-2 pr-2 justify-center", statusBadgeColor)}>
-          {log.status === "pending" ? (
-            <LoaderCircle className="animate-spin h-3 w-3" />
-          ) : (
-            log.status.toUpperCase()
-          )}
-        </Badge>
-        <Badge className={cn("w-20 justify-center", methodBadgeColor)}>
-          {httpMethod}
-        </Badge> */}
-        {/* <span className="flex-1 truncate">{`Query: ${log?.request?.query}`}</span> */}
+
         <span className="flex-1 truncate">
           <SyntaxHighlighter
             language="sql"
@@ -230,7 +214,7 @@ export const Logger = () => {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-0 flex-1">
+          <CardContent className="p-0 flex-1 overflow-y-auto">
             <ScrollArea className="h-full">
               {logs.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
