@@ -1,26 +1,8 @@
 "use client";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,57 +31,29 @@ import { useApi } from "@/hooks/use-api";
 import { toast } from "@/hooks/use-toast";
 import {
   type Classroom,
-  type CourseSection,
   type Lecturer,
   type Semester,
   type Subject,
 } from "@/lib/mock-data";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import * as React from "react";
+import { AddSectionDialog } from "./components/add-section-dialog";
+import { DeleteSectionDialog } from "./components/delete-section-dialog";
+import { EditSectionDialog } from "./components/edit-section-dialog";
 
-// Helper function to convert period to time
-const getPeriodTime = (period: number): string => {
-  const startTimes = [
-    "", // period 0 (not used)
-    "07:00", // period 1
-    "07:50", // period 2
-    "08:40", // period 3
-    "09:40", // period 4 (with 10min break)
-    "10:30", // period 5
-    "11:20", // period 6
-    "13:00", // period 7 (afternoon)
-    "13:50", // period 8
-    "14:40", // period 9
-    "15:40", // period 10 (with 10min break)
-    "16:30", // period 11
-    "17:20", // period 12
-  ];
-  return startTimes[period] || "";
-};
-
-const getPeriodEndTime = (period: number): string => {
-  const endTimes = [
-    "", // period 0 (not used)
-    "07:45", // period 1
-    "08:35", // period 2
-    "09:25", // period 3
-    "10:25", // period 4
-    "11:15", // period 5
-    "12:05", // period 6
-    "13:45", // period 7
-    "14:35", // period 8
-    "15:25", // period 9
-    "16:25", // period 10
-    "17:15", // period 11
-    "18:05", // period 12
-  ];
-  return endTimes[period] || "";
-};
-
-type CourseSectionWithDetails = CourseSection & {
-  subjectName: string;
-  lecturerName: string;
-  classroomName: string;
+type CourseSectionWithDetails = {
+  ma_lop_hp: string;
+  ma_hoc_ky: string;
+  ma_gv: string;
+  ho_ten_gv: string;
+  ma_mh: string;
+  ten_mh: string;
+  ma_phong: string;
+  ten_phong: string;
+  ma_lich_hoc: string;
+  thu: number;
+  tiet_bat_dau: number;
+  tiet_ket_thuc: number;
 };
 
 type CourseSectionsClientPageProps = {
@@ -138,20 +92,6 @@ export function CourseSectionsClientPage({
     React.useState<CourseSectionWithDetails | null>(null);
   const [reload, setReload] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-
-  // Form states
-  const [newSection, setNewSection] = React.useState({
-    subjectId: "",
-    lecturerId: "",
-    semesterId: "",
-    schedule: "",
-  });
-  const [scheduleData, setScheduleData] = React.useState({
-    dayOfWeek: "",
-    startPeriod: "",
-    endPeriod: "",
-    classroomId: "",
-  });
 
   const { apiCall } = useApi();
 
@@ -220,35 +160,7 @@ export function CourseSectionsClientPage({
           endpoint: "/api/query",
           method: "POST",
           body: {
-            query: `
-              SELECT 
-                lhp.ma_lop_hp as id,
-                lhp.ma_mh as subjectId,
-                lhp.ma_gv as lecturerId,
-                lhp.ma_hoc_ky as semesterId,
-                lhp.ma_phong as classroomId,
-                mh.ten_mh as subjectName,
-                gv.ho_ten_gv as lecturerName,
-                ph.ten_phong as classroomName,
-                CONCAT(
-                  CASE lh.thu 
-                    WHEN 2 THEN N'Thứ 2'
-                    WHEN 3 THEN N'Thứ 3'
-                    WHEN 4 THEN N'Thứ 4'
-                    WHEN 5 THEN N'Thứ 5'
-                    WHEN 6 THEN N'Thứ 6'
-                    WHEN 7 THEN N'Thứ 7'
-                    WHEN 8 THEN N'Chủ nhật'
-                  END,
-                  ', Tiết ', lh.tiet_bat_dau, '-', lh.tiet_ket_thuc
-                ) as schedule
-              FROM lop_hoc_phan lhp
-              LEFT JOIN mon_hoc mh ON lhp.ma_mh = mh.ma_mh
-              LEFT JOIN giang_vien gv ON lhp.ma_gv = gv.ma_gv
-              LEFT JOIN phong_hoc ph ON lhp.ma_phong = ph.ma_phong
-              LEFT JOIN lich_hoc lh ON lhp.ma_lop_hp = lh.ma_lop_hp
-              ORDER BY lhp.ma_lop_hp
-            `,
+            query: `SELECT * FROM vw_ds_lop_hoc_phan ORDER BY ma_lop_hp DESC`,
           },
         });
 
@@ -267,23 +179,23 @@ export function CourseSectionsClientPage({
     let filtered = sections;
 
     if (selectedSemester !== "all") {
-      filtered = filtered.filter((s) => s.semesterId === selectedSemester);
+      filtered = filtered.filter((s) => s.ma_hoc_ky === selectedSemester);
     }
 
     if (searchQuery) {
       const lowercasedQuery = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (s) =>
-          s.id.toLowerCase().includes(lowercasedQuery) ||
-          s.subjectName.toLowerCase().includes(lowercasedQuery) ||
-          s.lecturerName.toLowerCase().includes(lowercasedQuery)
+          s.ma_lop_hp.toLowerCase().includes(lowercasedQuery) ||
+          s.ten_mh.toLowerCase().includes(lowercasedQuery) ||
+          s.ho_ten_gv.toLowerCase().includes(lowercasedQuery)
       );
     }
 
     setFilteredSections(filtered);
   }, [searchQuery, selectedSemester, sections]);
 
-  const onCreate = async () => {
+  const onCreate = async (newSection: any, scheduleData: any) => {
     // Validate inputs
     if (
       !newSection.subjectId ||
@@ -321,9 +233,6 @@ export function CourseSectionsClientPage({
       return;
     }
 
-    // Generate class section ID
-    // const newSectionId = `LHP-${Date.now()}`;
-
     setLoading(true);
     try {
       // Insert into lop_hoc_phan
@@ -341,7 +250,21 @@ export function CourseSectionsClientPage({
 
       if (sectionResponse?.success) {
         // Insert into lich_hoc
-        const newSectionId = sectionResponse.result.insertId;
+        // Get the newly created section ID
+        const newSectionDB = await apiCall({
+          endpoint: "/api/query",
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: {
+            query: `SELECT * FROM lop_hoc_phan WHERE ma_mh = N'${newSection.subjectId}' 
+                    AND ma_gv = N'${newSection.lecturerId}' 
+                    AND ma_hoc_ky = N'${newSection.semesterId}' 
+                    AND ma_phong = N'${scheduleData.classroomId}' `,
+          },
+        });
+
         const scheduleResponse = await apiCall({
           endpoint: "/api/query",
           method: "POST",
@@ -349,8 +272,8 @@ export function CourseSectionsClientPage({
             "Content-Type": "application/json",
           },
           body: {
-            query: `INSERT INTO lich_hoc (ma_lop_hp, thu, tiet_bat_dau, tiet_ket_thuc, ma_phong) 
-                     VALUES (N'${newSectionId}', ${scheduleData.dayOfWeek}, ${scheduleData.startPeriod}, ${scheduleData.endPeriod}, N'${scheduleData.classroomId}')`,
+            query: `INSERT INTO lich_hoc (ma_lop_hp, thu, tiet_bat_dau, tiet_ket_thuc) 
+                     VALUES (N'${newSectionDB?.result?.recordset[0]?.ma_lop_hp}', ${scheduleData.dayOfWeek}, ${scheduleData.startPeriod}, ${scheduleData.endPeriod})`,
           },
         });
 
@@ -360,19 +283,6 @@ export function CourseSectionsClientPage({
           });
           setReload((prev) => !prev);
           setOpenAddDialog(false);
-          // Reset form
-          setNewSection({
-            subjectId: "",
-            lecturerId: "",
-            semesterId: "",
-            schedule: "",
-          });
-          setScheduleData({
-            dayOfWeek: "",
-            startPeriod: "",
-            endPeriod: "",
-            classroomId: "",
-          });
         } else {
           toast({
             title: "Thêm lịch học thất bại",
@@ -405,9 +315,9 @@ export function CourseSectionsClientPage({
     }
 
     if (
-      !editingSection.subjectId ||
-      !editingSection.lecturerId ||
-      !editingSection.semesterId
+      !editingSection.ma_mh ||
+      !editingSection.ma_gv ||
+      !editingSection.ma_hoc_ky
     ) {
       toast({
         title: "Vui lòng điền đầy đủ thông tin",
@@ -452,9 +362,9 @@ export function CourseSectionsClientPage({
         },
         body: {
           query: `UPDATE lop_hoc_phan 
-                   SET ma_mh = N'${editingSection.subjectId}', ma_gv = N'${editingSection.lecturerId}', 
-                       ma_hoc_ky = N'${editingSection.semesterId}', ma_phong = N'${editScheduleData.classroomId}' 
-                   WHERE ma_lop_hp = N'${editingSection.id}'`,
+                   SET ma_mh = N'${editingSection.ma_mh}', ma_gv = N'${editingSection.ma_gv}', 
+                       ma_hoc_ky = N'${editingSection.ma_hoc_ky}', ma_phong = N'${editingSection.ma_phong}' 
+                   WHERE ma_lop_hp = N'${editingSection.ma_lop_hp}'`,
         },
       });
 
@@ -470,7 +380,7 @@ export function CourseSectionsClientPage({
             query: `UPDATE lich_hoc 
                      SET thu = ${editScheduleData.dayOfWeek}, tiet_bat_dau = ${editScheduleData.startPeriod}, 
                          tiet_ket_thuc = ${editScheduleData.endPeriod}, ma_phong = N'${editScheduleData.classroomId}' 
-                     WHERE ma_lop_hp = N'${editingSection.id}'`,
+                     WHERE ma_lop_hp = N'${editingSection.ma_lop_hp}'`,
           },
         });
 
@@ -520,7 +430,7 @@ export function CourseSectionsClientPage({
           "Content-Type": "application/json",
         },
         body: {
-          query: `DELETE FROM lich_hoc WHERE ma_lop_hp = N'${deletingSection.id}'`,
+          query: `DELETE FROM lich_hoc WHERE ma_lop_hp = N'${deletingSection.ma_lop_hp}'`,
         },
       });
 
@@ -533,7 +443,7 @@ export function CourseSectionsClientPage({
             "Content-Type": "application/json",
           },
           body: {
-            query: `DELETE FROM lop_hoc_phan WHERE ma_lop_hp = N'${deletingSection.id}'`,
+            query: `DELETE FROM lop_hoc_phan WHERE ma_lop_hp = N'${deletingSection.ma_lop_hp}'`,
           },
         });
 
@@ -579,7 +489,7 @@ export function CourseSectionsClientPage({
         },
         body: {
           query: `SELECT thu as dayOfWeek, tiet_bat_dau as startPeriod, tiet_ket_thuc as endPeriod, ma_phong as classroomId 
-                   FROM lich_hoc WHERE ma_lop_hp = N'${section.id}'`,
+                   FROM lich_hoc WHERE ma_lop_hp = N'${section.ma_lop_hp}'`,
         },
       });
 
@@ -681,6 +591,7 @@ export function CourseSectionsClientPage({
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Học kỳ</TableHead>
                 <TableHead>Mã lớp HP</TableHead>
                 <TableHead>Tên môn học</TableHead>
                 <TableHead>Giảng viên</TableHead>
@@ -693,12 +604,29 @@ export function CourseSectionsClientPage({
             </TableHeader>
             <TableBody>
               {filteredSections.map((section) => (
-                <TableRow key={section.id}>
-                  <TableCell className="font-medium">{section.id}</TableCell>
-                  <TableCell>{section.subjectName}</TableCell>
-                  <TableCell>{section.lecturerName}</TableCell>
-                  <TableCell>{section.classroomName}</TableCell>
-                  <TableCell>{section.schedule}</TableCell>
+                <TableRow key={section.ma_lop_hp}>
+                  <TableCell className="font-medium">
+                    {section.ma_hoc_ky}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {section.ma_lop_hp}
+                  </TableCell>
+                  <TableCell>
+                    {`${section.ten_mh} (${section.ma_mh})`}
+                  </TableCell>
+                  <TableCell>
+                    {`${section.ho_ten_gv} (${section.ma_gv})`}
+                  </TableCell>
+                  <TableCell>
+                    {section.ma_phong} - {section.ten_phong}
+                  </TableCell>
+                  <TableCell>
+                    {`Thứ ${section.thu} - Tiết ${
+                      section.tiet_bat_dau === section.tiet_ket_thuc
+                        ? section.tiet_bat_dau
+                        : `${section.tiet_bat_dau} đến ${section.tiet_ket_thuc}`
+                    }`}
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -729,419 +657,40 @@ export function CourseSectionsClientPage({
         </CardContent>
       </Card>
 
-      {/* Add Dialog */}
-      <Dialog open={openAddDialog} onOpenChange={setOpenAddDialog}>
-        <DialogContent className="sm:max-w-[800px]">
-          <DialogHeader>
-            <DialogTitle>Thêm lớp học phần mới</DialogTitle>
-            <DialogDescription>
-              Điền thông tin chi tiết của lớp học phần.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            {/* Add form fields for new section */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="subject" className="text-right">
-                Môn học
-              </Label>
-              <Select
-                onValueChange={(val) =>
-                  setNewSection({ ...newSection, subjectId: val })
-                }
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Chọn môn học" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjects.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="lecturer" className="text-right">
-                Giảng viên
-              </Label>
-              <Select
-                onValueChange={(val) =>
-                  setNewSection({ ...newSection, lecturerId: val })
-                }
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Chọn giảng viên" />
-                </SelectTrigger>
-                <SelectContent>
-                  {lecturers.map((l) => (
-                    <SelectItem key={l.id} value={l.id}>
-                      {l.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="semester" className="text-right">
-                Học kỳ
-              </Label>
-              <Select
-                onValueChange={(val) =>
-                  setNewSection({ ...newSection, semesterId: val })
-                }
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Chọn học kỳ" />
-                </SelectTrigger>
-                <SelectContent>
-                  {semesters.map((s) => (
-                    <SelectItem
-                      key={s.id}
-                      value={s.id}
-                    >{`${s.name} - ${s.schoolYear}`}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      {/* Dialog Components */}
+      <AddSectionDialog
+        open={openAddDialog}
+        onOpenChange={setOpenAddDialog}
+        subjects={subjects}
+        lecturers={lecturers}
+        classrooms={classrooms}
+        semesters={semesters}
+        loading={loading}
+        onSubmit={onCreate}
+      />
 
-            {/* Lịch học section */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Lịch học</Label>
-              <div className="col-span-3 space-y-3">
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <Label className="text-sm">Thứ</Label>
-                    <Select
-                      onValueChange={(val) =>
-                        setScheduleData({ ...scheduleData, dayOfWeek: val })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn thứ" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="2">Thứ 2</SelectItem>
-                        <SelectItem value="3">Thứ 3</SelectItem>
-                        <SelectItem value="4">Thứ 4</SelectItem>
-                        <SelectItem value="5">Thứ 5</SelectItem>
-                        <SelectItem value="6">Thứ 6</SelectItem>
-                        <SelectItem value="7">Thứ 7</SelectItem>
-                        <SelectItem value="8">Chủ nhật</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-sm">Tiết bắt đầu</Label>
-                    <Select
-                      onValueChange={(val) =>
-                        setScheduleData({ ...scheduleData, startPeriod: val })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Tiết" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 12 }, (_, i) => i + 1).map(
-                          (period) => (
-                            <SelectItem key={period} value={period.toString()}>
-                              Tiết {period} ({getPeriodTime(period)} -{" "}
-                              {getPeriodEndTime(period)})
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-sm">Tiết kết thúc</Label>
-                    <Select
-                      onValueChange={(val) =>
-                        setScheduleData({ ...scheduleData, endPeriod: val })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Tiết" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 12 }, (_, i) => i + 1).map(
-                          (period) => (
-                            <SelectItem key={period} value={period.toString()}>
-                              Tiết {period} ({getPeriodTime(period)} -{" "}
-                              {getPeriodEndTime(period)})
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            </div>
+      <EditSectionDialog
+        open={openEditDialog}
+        onOpenChange={setOpenEditDialog}
+        editingSection={editingSection as any}
+        scheduleData={editScheduleData}
+        subjects={subjects}
+        lecturers={lecturers}
+        classrooms={classrooms}
+        semesters={semesters}
+        loading={loading}
+        onUpdateSection={setEditingSection as any}
+        onUpdateSchedule={setEditScheduleData}
+        onSubmit={onUpdate}
+      />
 
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="classroom" className="text-right">
-                Phòng học
-              </Label>
-              <Select
-                onValueChange={(val) =>
-                  setScheduleData({ ...scheduleData, classroomId: val })
-                }
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Chọn phòng học" />
-                </SelectTrigger>
-                <SelectContent>
-                  {classrooms.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name} (Sức chứa: {c.capacity})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" onClick={onCreate} disabled={loading}>
-              {loading ? "Đang lưu..." : "Lưu"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Dialog */}
-      <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Sửa thông tin lớp học phần</DialogTitle>
-            <DialogDescription>
-              Thay đổi thông tin của lớp học phần.
-            </DialogDescription>
-          </DialogHeader>
-          {editingSection && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="subject-edit" className="text-right">
-                  Môn học
-                </Label>
-                <Select
-                  value={editingSection.subjectId}
-                  onValueChange={(val) =>
-                    setEditingSection({
-                      ...editingSection,
-                      subjectId: val,
-                    })
-                  }
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subjects.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="lecturer-edit" className="text-right">
-                  Giảng viên
-                </Label>
-                <Select
-                  value={editingSection.lecturerId}
-                  onValueChange={(val) =>
-                    setEditingSection({
-                      ...editingSection,
-                      lecturerId: val,
-                    })
-                  }
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {lecturers.map((l) => (
-                      <SelectItem key={l.id} value={l.id}>
-                        {l.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="semester-edit" className="text-right">
-                  Học kỳ
-                </Label>
-                <Select
-                  value={editingSection.semesterId}
-                  onValueChange={(val) =>
-                    setEditingSection({
-                      ...editingSection,
-                      semesterId: val,
-                    })
-                  }
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {semesters.map((s) => (
-                      <SelectItem
-                        key={s.id}
-                        value={s.id}
-                      >{`${s.name} - ${s.schoolYear}`}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Lịch học section for edit */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Lịch học</Label>
-                <div className="col-span-3 space-y-3">
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <Label className="text-sm">Thứ</Label>
-                      <Select
-                        value={editScheduleData.dayOfWeek}
-                        onValueChange={(val) =>
-                          setEditScheduleData({
-                            ...editScheduleData,
-                            dayOfWeek: val,
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn thứ" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="2">Thứ 2</SelectItem>
-                          <SelectItem value="3">Thứ 3</SelectItem>
-                          <SelectItem value="4">Thứ 4</SelectItem>
-                          <SelectItem value="5">Thứ 5</SelectItem>
-                          <SelectItem value="6">Thứ 6</SelectItem>
-                          <SelectItem value="7">Thứ 7</SelectItem>
-                          <SelectItem value="8">Chủ nhật</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-sm">Tiết bắt đầu</Label>
-                      <Select
-                        value={editScheduleData.startPeriod}
-                        onValueChange={(val) =>
-                          setEditScheduleData({
-                            ...editScheduleData,
-                            startPeriod: val,
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Tiết" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 12 }, (_, i) => i + 1).map(
-                            (period) => (
-                              <SelectItem
-                                key={period}
-                                value={period.toString()}
-                              >
-                                Tiết {period} ({getPeriodTime(period)} -{" "}
-                                {getPeriodEndTime(period)})
-                              </SelectItem>
-                            )
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-sm">Tiết kết thúc</Label>
-                      <Select
-                        value={editScheduleData.endPeriod}
-                        onValueChange={(val) =>
-                          setEditScheduleData({
-                            ...editScheduleData,
-                            endPeriod: val,
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Tiết" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 12 }, (_, i) => i + 1).map(
-                            (period) => (
-                              <SelectItem
-                                key={period}
-                                value={period.toString()}
-                              >
-                                Tiết {period} ({getPeriodTime(period)} -{" "}
-                                {getPeriodEndTime(period)})
-                              </SelectItem>
-                            )
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="classroom-edit" className="text-right">
-                  Phòng học
-                </Label>
-                <Select
-                  value={editScheduleData.classroomId}
-                  onValueChange={(val) =>
-                    setEditScheduleData({
-                      ...editScheduleData,
-                      classroomId: val,
-                    })
-                  }
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Chọn phòng học" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classrooms.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name} (Sức chứa: {c.capacity})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button type="submit" onClick={onUpdate} disabled={loading}>
-              {loading ? "Đang lưu..." : "Lưu thay đổi"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete AlertDialog */}
-      <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Bạn có chắc không?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Hành động này không thể được hoàn tác. Thao tác này sẽ xóa vĩnh
-              viễn lớp học phần "{deletingSection?.id}" khỏi hệ thống.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={onDelete} disabled={loading}>
-              {loading ? "Đang xóa..." : "Tiếp tục"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteSectionDialog
+        open={openDeleteDialog}
+        onOpenChange={setOpenDeleteDialog}
+        deletingSection={deletingSection as any}
+        loading={loading}
+        onConfirm={onDelete}
+      />
     </div>
   );
 }
