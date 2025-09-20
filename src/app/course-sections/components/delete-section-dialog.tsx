@@ -10,13 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { type CourseSection } from "@/lib/mock-data";
-
-type CourseSectionWithDetails = CourseSection & {
-  subjectName: string;
-  lecturerName: string;
-  classroomName: string;
-};
+import { CourseSectionWithDetails } from "../client-page";
 
 type DeleteSectionDialogProps = {
   open: boolean;
@@ -40,7 +34,7 @@ export function DeleteSectionDialog({
           <AlertDialogTitle>Bạn có chắc không?</AlertDialogTitle>
           <AlertDialogDescription>
             Hành động này không thể được hoàn tác. Thao tác này sẽ xóa vĩnh viễn
-            lớp học phần "{deletingSection?.id}" khỏi hệ thống.
+            lớp học phần "{deletingSection?.ma_lop_hp}" khỏi hệ thống.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

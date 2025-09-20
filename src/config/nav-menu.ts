@@ -57,7 +57,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: CalendarClock,
   },
   {
-    title: "Lớp học phần",
+    title: "Lớp học phần - Ok",
     href: "/course-sections",
     icon: Presentation,
   },

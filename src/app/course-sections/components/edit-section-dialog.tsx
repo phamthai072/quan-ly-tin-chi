@@ -19,11 +19,11 @@ import {
 } from "@/components/ui/select";
 import {
   type Classroom,
-  type CourseSection,
   type Lecturer,
   type Semester,
   type Subject,
 } from "@/lib/mock-data";
+import { CourseSectionWithDetails } from "../client-page";
 
 // Helper function to convert period to time
 const getPeriodTime = (period: number): string => {
@@ -62,12 +62,6 @@ const getPeriodEndTime = (period: number): string => {
     "18:05", // period 12
   ];
   return endTimes[period] || "";
-};
-
-type CourseSectionWithDetails = CourseSection & {
-  subjectName: string;
-  lecturerName: string;
-  classroomName: string;
 };
 
 type ScheduleData = {
@@ -110,7 +104,7 @@ export function EditSectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Sửa thông tin lớp học phần</DialogTitle>
           <DialogDescription>
@@ -123,11 +117,11 @@ export function EditSectionDialog({
               Môn học
             </Label>
             <Select
-              value={editingSection.subjectId}
+              value={editingSection.ma_mh}
               onValueChange={(val) =>
                 onUpdateSection({
                   ...editingSection,
-                  subjectId: val,
+                  ma_mh: val,
                 })
               }
             >
@@ -148,11 +142,11 @@ export function EditSectionDialog({
               Giảng viên
             </Label>
             <Select
-              value={editingSection.lecturerId}
+              value={editingSection.ma_gv}
               onValueChange={(val) =>
                 onUpdateSection({
                   ...editingSection,
-                  lecturerId: val,
+                  ma_gv: val,
                 })
               }
             >
@@ -173,11 +167,11 @@ export function EditSectionDialog({
               Học kỳ
             </Label>
             <Select
-              value={editingSection.semesterId}
+              value={editingSection.ma_hoc_ky}
               onValueChange={(val) =>
                 onUpdateSection({
                   ...editingSection,
-                  semesterId: val,
+                  ma_hoc_ky: val,
                 })
               }
             >

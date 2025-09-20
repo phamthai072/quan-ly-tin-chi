@@ -41,7 +41,7 @@ import { AddSectionDialog } from "./components/add-section-dialog";
 import { DeleteSectionDialog } from "./components/delete-section-dialog";
 import { EditSectionDialog } from "./components/edit-section-dialog";
 
-type CourseSectionWithDetails = {
+export type CourseSectionWithDetails = {
   ma_lop_hp: string;
   ma_hoc_ky: string;
   ma_gv: string;
@@ -56,7 +56,7 @@ type CourseSectionWithDetails = {
   tiet_ket_thuc: number;
 };
 
-type CourseSectionsClientPageProps = {
+export type CourseSectionsClientPageProps = {
   sections: CourseSectionWithDetails[];
 };
 
@@ -363,7 +363,7 @@ export function CourseSectionsClientPage({
         body: {
           query: `UPDATE lop_hoc_phan 
                    SET ma_mh = N'${editingSection.ma_mh}', ma_gv = N'${editingSection.ma_gv}', 
-                       ma_hoc_ky = N'${editingSection.ma_hoc_ky}', ma_phong = N'${editingSection.ma_phong}' 
+                       ma_hoc_ky = N'${editingSection.ma_hoc_ky}'
                    WHERE ma_lop_hp = N'${editingSection.ma_lop_hp}'`,
         },
       });
@@ -379,7 +379,7 @@ export function CourseSectionsClientPage({
           body: {
             query: `UPDATE lich_hoc 
                      SET thu = ${editScheduleData.dayOfWeek}, tiet_bat_dau = ${editScheduleData.startPeriod}, 
-                         tiet_ket_thuc = ${editScheduleData.endPeriod}, ma_phong = N'${editScheduleData.classroomId}' 
+                         tiet_ket_thuc = ${editScheduleData.endPeriod}
                      WHERE ma_lop_hp = N'${editingSection.ma_lop_hp}'`,
           },
         });
@@ -679,7 +679,7 @@ export function CourseSectionsClientPage({
         classrooms={classrooms}
         semesters={semesters}
         loading={loading}
-        onUpdateSection={setEditingSection as any}
+        onUpdateSection={setEditingSection}
         onUpdateSchedule={setEditScheduleData}
         onSubmit={onUpdate}
       />
