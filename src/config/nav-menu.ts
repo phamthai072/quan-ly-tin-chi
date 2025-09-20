@@ -88,7 +88,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: BookUser,
   },
   {
-    title: "Lương giảng viên",
+    title: "Lương giảng viên - Ok",
     href: "/lecturer-salary",
     icon: Wallet,
   },

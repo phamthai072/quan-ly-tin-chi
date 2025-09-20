@@ -1,20 +1,19 @@
 -- Danh sách Procedure (chạy khi đc gọi)
 USE QuanLyTinChi;
 
-GO
-    -- 1. proc_dang_ky_lop – Thực hiện đăng ký lớp học phần cho sinh viên (gồm tất cả kiểm tra ràng buộc).
-    -- =============================================
-    -- Procedure: proc_dang_ky_lop
-    -- Chức năng: Đăng ký lớp học phần cho sinh viên
-    -- Kiểm tra các ràng buộc:
-    --   1. Sinh viên chưa học môn này trong cùng học kỳ
-    --   2. Không vượt quá 20 tín chỉ trong học kỳ
-    --   3. Đã hoàn thành môn tiên quyết
-    --   4. Không học quá 3 môn ngoài chuyên ngành (trừ môn cơ bản)
-    --   5. Số sinh viên trong lớp không vượt quá sức chứa phòng học
-    -- =============================================
-    CREATE PROCEDURE proc_dang_ky_lop @ma_sv CHAR(15),
-    @ma_lop_hp CHAR(10) AS BEGIN
+-- 1. proc_dang_ky_lop – Thực hiện đăng ký lớp học phần cho sinh viên (gồm tất cả kiểm tra ràng buộc).
+-- =============================================
+-- Procedure: proc_dang_ky_lop
+-- Chức năng: Đăng ký lớp học phần cho sinh viên
+-- Kiểm tra các ràng buộc:
+--   1. Sinh viên chưa học môn này trong cùng học kỳ
+--   2. Không vượt quá 20 tín chỉ trong học kỳ
+--   3. Đã hoàn thành môn tiên quyết
+--   4. Không học quá 3 môn ngoài chuyên ngành (trừ môn cơ bản)
+--   5. Số sinh viên trong lớp không vượt quá sức chứa phòng học
+-- =============================================
+CREATE PROCEDURE proc_dang_ky_lop @ma_sv CHAR(15),
+@ma_lop_hp CHAR(10) AS BEGIN
 SET
     NOCOUNT ON;
 
@@ -212,7 +211,11 @@ FROM
 WHERE
     ma_phong = @ma_phong;
 
-IF @so_sv_lop >= @suc_chua BEGIN RAISERROR(N'Lớp học phần đã đủ số sinh viên tối đa.', 16, 1);
+IF @so_sv_lop >= @suc_chua BEGIN RAISERROR(
+    N'Lớp học phần đã đủ số sinh viên tối đa.',
+    16,
+    1
+);
 
 RETURN;
 
@@ -220,7 +223,7 @@ END -- Nếu qua hết kiểm tra -> thêm bản ghi vào ket_qua
 INSERT INTO
     ket_qua(ma_lop_hp, ma_sv, diem)
 VALUES
-(@ma_lop_hp, @ma_sv, NULL);
+    (@ma_lop_hp, @ma_sv, NULL);
 
 COMMIT TRANSACTION;
 
@@ -391,7 +394,7 @@ INSERT INTO
         he_dao_tao
     )
 VALUES
-(
+    (
         @ma_sv,
         @ma_chuyen_nganh,
         @ma_khoa_hoc,
@@ -473,7 +476,7 @@ SET
 INSERT INTO
     mon_hoc(ma_mh, ten_mh, so_tin_chi, ma_chuyen_nganh, loai)
 VALUES
-(
+    (
         @ma_mh,
         @ten_mh,
         @so_tin_chi,
@@ -532,3 +535,8 @@ GROUP BY
     gv.don_gia;
 
 END;
+
+-- • Sinh viên học các môn học. Mỗi sinh viên có thể học một môn học nhiều lần trong nhiều kỳ khác nhau. 
+-- Một học kỳ, một sinh viên không thể học một môn nào đó 2 lần. Trong mỗi học kỳ, sinh viên chỉ được học tối đa 20 tín chỉ. 
+-- • Thông tin về môn học có yêu cầu về môn học trước và môn học sau. Sinh viên chỉ được học môn nào đó nếu đã hoàn thành các môn học tiên quyết của môn đó. Sinh viên thi hết môn có thể đạt điểm qua môn hoặc không qua môn. 
+-- • Sinh viên thuộc một chuyên ngành nào đó chỉ được học tối đa 3 môn không thuộc chuyên ngành của mình (trừ các môn cơ bản).
