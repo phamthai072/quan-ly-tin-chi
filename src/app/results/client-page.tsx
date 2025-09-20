@@ -1,6 +1,37 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -8,307 +39,507 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, Search } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { type Result, type Student, type Semester, type Subject } from '@/lib/mock-data';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+} from "@/components/ui/table";
+import { useApi } from "@/hooks/use-api";
+import { Edit, MoreHorizontal, Search } from "lucide-react";
+import * as React from "react";
 
-type ResultWithDetails = Result & { studentName: string; subjectName: string; semesterName: string; };
-
-type ResultsClientPageProps = {
-  results: ResultWithDetails[];
-  students: Student[];
-  semesters: Semester[];
-  subjects: Subject[];
+// Type cho dữ liệu từ view vw_thong_ke_sv
+type StudentStatistics = {
+  ma_sv: string;
+  ho_ten_sv: string;
+  ma_chuyen_nganh: string;
+  ten_chuyen_nganh: string;
+  ten_khoa: string;
+  ma_khoa_hoc: string;
+  ten_khoa_hoc: string;
+  ma_hoc_ky: string;
+  diem_tb_hk: number | null;
+  diem_tb_tich_luy: number | null;
+  tong_mon_hoc: number;
+  tong_tc_no: number | null;
 };
 
-export function ResultsClientPage({ 
-    results: initialResults, 
-    students,
-    semesters,
-    subjects,
+// Type cho form sửa điểm
+type ScoreEditForm = {
+  ma_sv: string;
+  ma_lop_hp: string;
+  diem: number;
+};
+
+type ResultsClientPageProps = {
+  initialData?: StudentStatistics[];
+};
+
+export function ResultsClientPage({
+  initialData = [],
 }: ResultsClientPageProps) {
-  const [results, setResults] = React.useState(initialResults);
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [studentStats, setStudentStats] =
+    React.useState<StudentStatistics[]>(initialData);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [submittedSearchQuery, setSubmittedSearchQuery] = React.useState("");
   const [selectedSemester, setSelectedSemester] = React.useState<string>("all");
-  const [selectedStudent, setSelectedStudent] = React.useState<string>("all");
-  const [editingResult, setEditingResult] = React.useState<ResultWithDetails | null>(null);
-
-  const [isNewResultDialogOpen, setIsNewResultDialogOpen] = React.useState(false);
-  const [newResult, setNewResult] = React.useState<Partial<Result>>({
-      studentId: undefined,
-      semesterId: undefined,
-      subjectId: undefined,
-      midtermScore: null,
-      finalScore: null,
+  const [selectedMajor, setSelectedMajor] = React.useState<string>("all");
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [editingStudent, setEditingStudent] =
+    React.useState<StudentStatistics | null>(null);
+  const [scoreForm, setScoreForm] = React.useState<ScoreEditForm>({
+    ma_sv: "",
+    ma_lop_hp: "",
+    diem: 0,
   });
+  const [classSections, setClassSections] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(false);
 
+  // State cho dữ liệu bộ lọc
+  const [semesters, setSemesters] = React.useState<any[]>([]);
+  const [majors, setMajors] = React.useState<any[]>([]);
+  const [students, setStudents] = React.useState<any[]>([]);
+  const [selectedStudent, setSelectedStudent] = React.useState<string>("all");
+
+  const { apiCall } = useApi();
+
+  // Function xử lý tìm kiếm
   const handleSearch = () => {
-    let filteredResults = initialResults;
-
-    if (selectedSemester !== "all") {
-        filteredResults = filteredResults.filter(r => r.semesterId === selectedSemester);
-    }
-
-    if (selectedStudent !== "all") {
-        filteredResults = filteredResults.filter(r => r.studentId === selectedStudent);
-    }
-    
-    if (searchQuery) {
-        const lowercasedQuery = searchQuery.toLowerCase();
-        filteredResults = filteredResults.filter(r => 
-            r.studentName.toLowerCase().includes(lowercasedQuery) ||
-            r.studentId.toLowerCase().includes(lowercasedQuery) ||
-            r.subjectName.toLowerCase().includes(lowercasedQuery)
-        );
-    }
-
-    setResults(filteredResults);
+    setSubmittedSearchQuery(searchQuery);
   };
-  
+
+  // Lấy danh sách học kỳ
+  const fetchSemesters = React.useCallback(async () => {
+    try {
+      const result = await apiCall({
+        endpoint: "/api/query",
+        method: "POST",
+        body: {
+          query:
+            "SELECT DISTINCT ma_hk, ten_hk FROM hoc_ky ORDER BY ma_hk DESC",
+        },
+      });
+
+      if (result && Array.isArray(result?.result?.recordset)) {
+        setSemesters(result?.result?.recordset);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách học kỳ:", error);
+    }
+  }, [apiCall]);
+
+  // Lấy danh sách chuyên ngành
+  const fetchMajors = React.useCallback(async () => {
+    try {
+      const result = await apiCall({
+        endpoint: "/api/query",
+        method: "POST",
+        body: {
+          query:
+            "SELECT ma_chuyen_nganh, ten_chuyen_nganh FROM chuyen_nganh ORDER BY ten_chuyen_nganh",
+        },
+      });
+
+      if (result && Array.isArray(result?.result?.recordset)) {
+        setMajors(result?.result?.recordset);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách chuyên ngành:", error);
+    }
+  }, [apiCall]);
+
+  // Lấy danh sách sinh viên
+  const fetchStudents = React.useCallback(async () => {
+    try {
+      const result = await apiCall({
+        endpoint: "/api/query",
+        method: "POST",
+        body: {
+          query: "SELECT ma_sv, ho_ten_sv FROM sinh_vien ORDER BY ho_ten_sv",
+        },
+      });
+
+      if (result && Array.isArray(result?.result?.recordset)) {
+        setStudents(result?.result?.recordset);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách sinh viên:", error);
+    }
+  }, [apiCall]);
+
+  // Lấy dữ liệu thống kê sinh viên
+  const fetchStudentStatistics = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await apiCall({
+        endpoint: "/api/query",
+        method: "POST",
+        body: {
+          query:
+            "SELECT * FROM vw_thong_ke_sv ORDER BY tong_mon_hoc DESC, tong_tc_no ASC",
+        },
+      });
+
+      if (result && Array.isArray(result?.result?.recordset)) {
+        setStudentStats(result?.result?.recordset);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu thống kê sinh viên:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [apiCall]);
+
+  // Lấy danh sách lớp học phần của sinh viên
+  const fetchClassSections = React.useCallback(
+    async (ma_sv: string, ma_hk: string) => {
+      try {
+        const query = `
+        SELECT DISTINCT lhp.ma_lop_hp, mh.ten_mh, kq.diem
+        FROM lop_hoc_phan lhp
+        INNER JOIN mon_hoc mh ON lhp.ma_mh = mh.ma_mh
+        LEFT JOIN ket_qua kq ON lhp.ma_lop_hp = kq.ma_lop_hp AND kq.ma_sv = '${ma_sv}'
+        WHERE lhp.ma_hk = '${ma_hk}'
+        ORDER BY mh.ten_mh
+      `;
+
+        const result = await apiCall({
+          endpoint: "/api/query",
+          method: "POST",
+          body: { query },
+        });
+
+        if (result && Array.isArray(result?.result?.recordset)) {
+          setClassSections(result?.result?.recordset);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách lớp học phần:", error);
+      }
+    },
+    [apiCall]
+  );
+
+  // Lưu điểm
+  const handleSaveScore = async () => {
+    if (!scoreForm.ma_sv || !scoreForm.ma_lop_hp) {
+      alert("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+
+    try {
+      // Kiểm tra xem đã có điểm chưa
+      const checkQuery = `
+        SELECT COUNT(*) as count 
+        FROM ket_qua 
+        WHERE ma_sv = '${scoreForm.ma_sv}' AND ma_lop_hp = '${scoreForm.ma_lop_hp}'
+      `;
+
+      const checkResult = await apiCall({
+        endpoint: "/api/query",
+        method: "POST",
+        body: { query: checkQuery },
+      });
+
+      let query = "";
+      if (checkResult && checkResult[0]?.count > 0) {
+        // Cập nhật điểm
+        query = `
+          UPDATE ket_qua 
+          SET diem = ${scoreForm.diem}
+          WHERE ma_sv = '${scoreForm.ma_sv}' AND ma_lop_hp = '${scoreForm.ma_lop_hp}'
+        `;
+      } else {
+        // Thêm điểm mới
+        query = `
+          INSERT INTO ket_qua (ma_sv, ma_lop_hp, diem)
+          VALUES ('${scoreForm.ma_sv}', '${scoreForm.ma_lop_hp}', ${scoreForm.diem})
+        `;
+      }
+
+      await apiCall({
+        endpoint: "/api/query",
+        method: "POST",
+        body: { query },
+      });
+
+      alert("Lưu điểm thành công!");
+      setIsEditDialogOpen(false);
+      fetchStudentStatistics(); // Refresh data
+    } catch (error) {
+      console.error("Lỗi khi lưu điểm:", error);
+      alert("Có lỗi xảy ra khi lưu điểm");
+    }
+  };
+
+  // Load data on mount
   React.useEffect(() => {
-    handleSearch();
-  }, [selectedSemester, selectedStudent, searchQuery]);
+    fetchSemesters();
+    fetchMajors();
+    fetchStudents();
 
+    if (initialData.length === 0) {
+      fetchStudentStatistics();
+    }
+  }, [
+    fetchStudentStatistics,
+    fetchSemesters,
+    fetchMajors,
+    fetchStudents,
+    initialData.length,
+  ]);
 
-  const calculateGPA = (midterm: number | null, final: number | null) => {
-      if (midterm === null || final === null) return null;
-      const overall = midterm * 0.3 + final * 0.7;
-      if (overall >= 8.5) return 4.0;
-      if (overall >= 7.0) return 3.0;
-      if (overall >= 5.5) return 2.0;
-      if (overall >= 4.0) return 1.0;
-      return 0.0;
-  }
-
-  const getLetterGrade = (gpa: number | null) => {
-      if (gpa === null) return 'N/A';
-      if (gpa >= 4.0) return 'A+';
-      if (gpa >= 3.7) return 'A';
-      if (gpa >= 3.0) return 'B+';
-      if (gpa >= 2.0) return 'C';
-      if (gpa >= 1.0) return 'D';
-      return 'F';
-  }
-
-  const handleSaveNewResult = () => {
-      // Logic to save the new result would go here
-      console.log('Saving new result:', newResult);
-      setIsNewResultDialogOpen(false);
-  }
-
-   const handleSaveEditedResult = () => {
-      // Logic to save the edited result would go here
-      console.log('Saving edited result:', editingResult);
-      setEditingResult(null);
-  }
-
+  const handleEditScore = (student: StudentStatistics) => {
+    setEditingStudent(student);
+    setScoreForm({
+      ma_sv: student.ma_sv,
+      ma_lop_hp: "",
+      diem: 0,
+    });
+    fetchClassSections(student.ma_sv, student.ma_hoc_ky);
+    setIsEditDialogOpen(true);
+  };
   return (
     <div className="space-y-8">
-       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Quản lý Kết quả học tập</h1>
-         <Dialog open={isNewResultDialogOpen} onOpenChange={setIsNewResultDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" /> Nhập điểm
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Nhập điểm mới</DialogTitle>
-              <DialogDescription>
-                Điền thông tin điểm của sinh viên.
-              </DialogDescription>
-            </DialogHeader>
-             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="student-select" className="text-right">Sinh viên</Label>
-                 <Select onValueChange={value => setNewResult({...newResult, studentId: value})}>
-                    <SelectTrigger className="col-span-3"><SelectValue placeholder="Chọn sinh viên" /></SelectTrigger>
-                    <SelectContent>
-                        {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name} - {s.id}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="semester-select" className="text-right">Học kỳ</Label>
-                 <Select onValueChange={value => setNewResult({...newResult, semesterId: value})}>
-                    <SelectTrigger className="col-span-3"><SelectValue placeholder="Chọn học kỳ" /></SelectTrigger>
-                    <SelectContent>
-                        {semesters.map(s => <SelectItem key={s.id} value={s.id}>{s.name} - {s.schoolYear}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-              </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="subject-select" className="text-right">Môn học</Label>
-                 <Select onValueChange={value => setNewResult({...newResult, subjectId: value})}>
-                    <SelectTrigger className="col-span-3"><SelectValue placeholder="Chọn môn học" /></SelectTrigger>
-                    <SelectContent>
-                        {subjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-              </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="midterm-score" className="text-right">Điểm giữa kỳ</Label>
-                <Input id="midterm-score" type="number" value={newResult.midtermScore ?? ''} onChange={e => setNewResult({...newResult, midtermScore: e.target.value === '' ? null : Number(e.target.value)})} className="col-span-3" />
-              </div>
-               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="final-score" className="text-right">Điểm cuối kỳ</Label>
-                <Input id="final-score" type="number" value={newResult.finalScore ?? ''} onChange={e => setNewResult({...newResult, finalScore: e.target.value === '' ? null : Number(e.target.value)})} className="col-span-3" />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button onClick={handleSaveNewResult} type="submit">Lưu</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Thống kê kết quả học tập
+        </h1>
       </div>
 
-       <Card>
+      <Card>
         <CardHeader>
           <CardTitle>Bộ lọc</CardTitle>
         </CardHeader>
-        <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className='space-y-2'>
-                <Label>Học kỳ</Label>
-                <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Chọn học kỳ" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Tất cả học kỳ</SelectItem>
-                        {semesters.map(s => <SelectItem key={s.id} value={s.id}>{s.name} - {s.schoolYear}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-             <div className='space-y-2'>
-                <Label>Sinh viên</Label>
-                <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Chọn sinh viên" />
-                    </SelectTrigger>
-                    <SelectContent>
-                         <SelectItem value="all">Tất cả sinh viên</SelectItem>
-                        {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name} - {s.id}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-             <div className='space-y-2'>
-                <Label>Tìm kiếm</Label>
-                <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="Tìm theo tên/mã SV, môn học..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full appearance-none bg-background pl-8 shadow-none"
-                    />
-                </div>
-            </div>
+        <CardContent className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <Label>Học kỳ</Label>
+            <Select
+              value={selectedSemester}
+              onValueChange={setSelectedSemester}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn học kỳ" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả học kỳ</SelectItem>
+                {semesters.map((s) => (
+                  <SelectItem key={s.ma_hk} value={s.ma_hk}>
+                    {s.ma_hk} - {s.ten_hk}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Chuyên ngành</Label>
+            <Select value={selectedMajor} onValueChange={setSelectedMajor}>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn chuyên ngành" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả chuyên ngành</SelectItem>
+                {majors.map((m) => (
+                  <SelectItem key={m.ma_chuyen_nganh} value={m.ma_chuyen_nganh}>
+                    {m.ten_chuyen_nganh}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Sinh viên</Label>
+            <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn sinh viên" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả sinh viên</SelectItem>
+                {students.map((s) => (
+                  <SelectItem key={s.ma_sv} value={s.ma_sv}>
+                    {s.ho_ten_sv} ({s.ma_sv})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2 flex items-end">
+            <Button onClick={handleSearch}>
+              <Search className="h-4 w-4 mr-2" />
+              Tìm kiếm
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách điểm</CardTitle>
+          <CardTitle>Thống kê sinh viên</CardTitle>
+          <CardDescription>
+            Danh sách thống kê điểm trung bình và tín chỉ của sinh viên
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mã SV</TableHead>
-                <TableHead>Họ và tên</TableHead>
-                <TableHead>Môn học</TableHead>
-                <TableHead>Học kỳ</TableHead>
-                <TableHead className="text-center">Giữa kỳ</TableHead>
-                <TableHead className="text-center">Cuối kỳ</TableHead>
-                <TableHead className="text-center">Điểm chữ</TableHead>
-                <TableHead className="text-center">GPA (Hệ 4)</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {results.map((result) => (
-                <TableRow key={result.id}>
-                  <TableCell className="font-medium">{result.studentId}</TableCell>
-                  <TableCell>{result.studentName}</TableCell>
-                  <TableCell>{result.subjectName}</TableCell>
-                  <TableCell>{result.semesterName}</TableCell>
-                  <TableCell className="text-center">{result.midtermScore?.toFixed(1) ?? 'N/A'}</TableCell>
-                  <TableCell className="text-center">{result.finalScore?.toFixed(1) ?? 'N/A'}</TableCell>
-                  <TableCell className="text-center">{getLetterGrade(result.gpa)}</TableCell>
-                   <TableCell className="text-center">{result.gpa?.toFixed(2) ?? 'N/A'}</TableCell>
-                  <TableCell>
-                    <Dialog onOpenChange={(open) => !open && setEditingResult(null)}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DialogTrigger asChild>
-                                <DropdownMenuItem onClick={() => setEditingResult(result)}>Sửa điểm</DropdownMenuItem>
-                            </DialogTrigger>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                       <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle>Sửa điểm</DialogTitle>
-                          <DialogDescription>
-                            Chỉnh sửa điểm cho sinh viên.
-                          </DialogDescription>
-                        </DialogHeader>
-                        {editingResult && (
-                        <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label className="text-right">Sinh viên</Label>
-                                <Input value={editingResult.studentName} readOnly className="col-span-3" />
-                            </div>
-                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label className="text-right">Môn học</Label>
-                                <Input value={editingResult.subjectName} readOnly className="col-span-3" />
-                            </div>
-                           <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="midterm-score-edit" className="text-right">Điểm giữa kỳ</Label>
-                            <Input id="midterm-score-edit" type="number" value={editingResult.midtermScore ?? ''} onChange={(e) => setEditingResult({...editingResult, midtermScore: e.target.value === '' ? null : Number(e.target.value)})} className="col-span-3" />
-                          </div>
-                           <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="final-score-edit" className="text-right">Điểm cuối kỳ</Label>
-                            <Input id="final-score-edit" type="number" value={editingResult.finalScore ?? ''} onChange={(e) => setEditingResult({...editingResult, finalScore: e.target.value === '' ? null : Number(e.target.value)})} className="col-span-3" />
-                          </div>
-                        </div>
-                        )}
-                        <DialogFooter>
-                          <Button onClick={handleSaveEditedResult} type="submit">Lưu thay đổi</Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </TableCell>
+          {loading ? (
+            <div className="text-center py-8">Đang tải dữ liệu...</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Mã SV</TableHead>
+                  <TableHead>Họ và tên</TableHead>
+                  <TableHead>Chuyên ngành</TableHead>
+                  <TableHead>Khoa</TableHead>
+                  <TableHead>Khóa học</TableHead>
+                  <TableHead>Học kỳ</TableHead>
+                  <TableHead className="text-center">ĐTB HK</TableHead>
+                  <TableHead className="text-center">ĐTB tích lũy</TableHead>
+                  <TableHead className="text-center">Số môn học</TableHead>
+                  <TableHead className="text-center">TC nợ</TableHead>
+                  <TableHead>
+                    <span className="sr-only">Thao tác</span>
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {studentStats.map((student) => (
+                  <TableRow key={`${student.ma_sv}-${student.ma_hoc_ky}`}>
+                    <TableCell className="font-medium">
+                      {student.ma_sv}
+                    </TableCell>
+                    <TableCell>{student.ho_ten_sv}</TableCell>
+                    <TableCell>{student.ten_chuyen_nganh}</TableCell>
+                    <TableCell>{student.ten_khoa}</TableCell>
+                    <TableCell>{student.ten_khoa_hoc}</TableCell>
+                    <TableCell>{student.ma_hoc_ky}</TableCell>
+                    <TableCell className="text-center">
+                      {student.diem_tb_hk?.toFixed(2) ?? "N/A"}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {student.diem_tb_tich_luy?.toFixed(2) ?? "N/A"}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {student.tong_mon_hoc}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {student.tong_tc_no ?? 0}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Mở menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Thao tác</DropdownMenuLabel>
+                          <DropdownMenuItem
+                            onClick={() => handleEditScore(student)}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Sửa điểm
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
+
+      {/* Dialog sửa điểm */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Sửa điểm sinh viên</DialogTitle>
+            <DialogDescription>
+              Chỉnh sửa điểm cuối kỳ cho sinh viên trong lớp học phần
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingStudent && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Sinh viên:</Label>
+                <div className="col-span-3 text-sm">
+                  {editingStudent.ho_ten_sv} ({editingStudent.ma_sv})
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Học kỳ:</Label>
+                <div className="col-span-3 text-sm">
+                  {editingStudent.ma_hoc_ky}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="class-section" className="text-right">
+                  Lớp học phần:
+                </Label>
+                <Select
+                  value={scoreForm.ma_lop_hp}
+                  onValueChange={(value) => {
+                    const selectedClass = classSections.find(
+                      (c) => c.ma_lop_hp === value
+                    );
+                    setScoreForm({
+                      ...scoreForm,
+                      ma_lop_hp: value,
+                      diem: selectedClass?.diem || 0,
+                    });
+                  }}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Chọn lớp học phần" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classSections.map((cls) => (
+                      <SelectItem key={cls.ma_lop_hp} value={cls.ma_lop_hp}>
+                        {cls.ten_mh} ({cls.ma_lop_hp}) - Điểm hiện tại:{" "}
+                        {cls.diem ?? "Chưa có"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="score" className="text-right">
+                  Điểm cuối kỳ:
+                </Label>
+                <Input
+                  id="score"
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  value={scoreForm.diem}
+                  onChange={(e) =>
+                    setScoreForm({
+                      ...scoreForm,
+                      diem: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+            >
+              Hủy
+            </Button>
+            <Button onClick={handleSaveScore}>Lưu điểm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

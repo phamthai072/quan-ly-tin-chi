@@ -1,22 +1,14 @@
--- ===============================================
--- TẠO DATABASE Quản lý tín chỉ
--- ===============================================
 CREATE DATABASE QuanLyTinChi;
 
-GO
-    -- Sử dụng database vừa tạo
-    USE QuanLyTinChi;
-
-GO
-    -- ===============================================
-    -- 1. Bảng KHOA: Lưu thông tin các khoa trong trường
-    --    Ví dụ: CNTT, Kinh tế, Ngôn ngữ...
-    -- ===============================================
-    CREATE TABLE khoa (
-        ma_khoa NVARCHAR(10) PRIMARY KEY,
-        -- Mã khoa, khóa chính
-        ten_khoa NVARCHAR(100) NOT NULL -- Tên khoa
-    );
+-- ===============================================
+-- 1. Bảng KHOA: Lưu thông tin các khoa trong trường
+--    Ví dụ: CNTT, Kinh tế, Ngôn ngữ...
+-- ===============================================
+CREATE TABLE khoa (
+    ma_khoa NVARCHAR(10) PRIMARY KEY,
+    -- Mã khoa, khóa chính
+    ten_khoa NVARCHAR(100) NOT NULL -- Tên khoa
+);
 
 -- ===============================================
 -- 2. Bảng CHUYÊN NGÀNH: Lưu các chuyên ngành thuộc một khoa
@@ -194,4 +186,27 @@ CREATE TABLE ket_qua (
     FOREIGN KEY (ma_sv) REFERENCES sinh_vien(ma_sv)
 );
 
-GO
+-- 13. Cấu hình 
+-- Bảng cấu hình hệ thống (thresholds, giới hạn)
+CREATE TABLE cau_hinh (
+    ten NVARCHAR(100) PRIMARY KEY,
+    gia_tri NVARCHAR(200) NOT NULL
+);
+
+-- Mặc định
+INSERT INTO
+    cau_hinh (ten, gia_tri)
+VALUES
+    (N'GPA_CanhBao', N'2.0'),
+    -- ngưỡng GPA cảnh báo
+    (N'TC_Max_HocKy', N'20'),
+    -- tối đa tín chỉ/học kỳ
+    (N 'MonNgoaiNganh_Max', N'3'),
+    -- tối đa số môn không thuộc chuyên ngành (không tính môn cơ bản)
+    (N'GV_Max_Lop_HK', N'8'),
+    -- GV dạy tối đa lớp/học kỳ
+    (N'HK_Tuoi_Tuan', N'16'),
+    -- số tuần/học kỳ
+    (N 'GV_NgayChuyen_ToiThieu_Tiet', N'48');
+
+-- ví dụ ngưỡng cảnh báo giờ dạy/học kỳ (tiết)

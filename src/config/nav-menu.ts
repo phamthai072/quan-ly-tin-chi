@@ -47,7 +47,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: GraduationCap,
   },
   {
-    title: "Môn học - thiếu môn tiên quyết",
+    title: "Môn học - thiếu MTT",
     href: "/subjects",
     icon: BookCopy,
   },
@@ -83,7 +83,7 @@ export const navMenuItems: NavMenuItem[] = [
     isHeader: true,
   },
   {
-    title: "Danh sách - Ok",
+    title: "Danh sách GV - Ok",
     href: "/lecturers",
     icon: BookUser,
   },
@@ -99,13 +99,18 @@ export const navMenuItems: NavMenuItem[] = [
     isHeader: true,
   },
   {
-    title: "Danh sách - Ok",
+    title: "Danh sách SV - Ok",
     href: "/students",
     icon: Users,
   },
   {
-    title: "Điểm học tập",
+    title: "Thống kê điểm - Ok",
     href: "/results",
+    icon: FileText,
+  },
+  {
+    title: "Điểm môn học - Ok",
+    href: "/subjects-scores",
     icon: FileText,
   },
   {

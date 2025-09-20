@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-import { navMenuItems, type NavMenuItem } from '@/config/nav-menu';
-import { cn } from '@/lib/utils';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
+} from "@/components/ui/accordion";
 import {
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
   SidebarGroupLabel,
-} from '@/components/ui/sidebar';
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { navMenuItems, type NavMenuItem } from "@/config/nav-menu";
+import { cn } from "@/lib/utils";
 
 export function NavMenu() {
   const pathname = usePathname();
@@ -26,24 +26,39 @@ export function NavMenu() {
   const menuItems = navMenuItems;
 
   const renderMenuItem = (item: NavMenuItem) => {
-    const isActive = item.href ? pathname.startsWith(item.href) : false;
+    const isActive = item.href ? pathname === item.href : false;
 
     if (item.isHeader) {
-      return <SidebarGroupLabel className='text-lg w-full pl-3 font-semibold text-black text-center' key={item.title}>{item.title}</SidebarGroupLabel>;
+      return (
+        <SidebarGroupLabel
+          className="text-lg w-full pl-3 font-semibold text-black text-center"
+          key={item.title}
+        >
+          {item.title}
+        </SidebarGroupLabel>
+      );
     }
 
     if (item.children) {
       // Check if any child link is active to keep the accordion open
-      const isChildActive = item.children.some(child => child.href && pathname.startsWith(child.href));
-      
+      const isChildActive = item.children.some(
+        (child) => child.href && pathname === child.href
+      );
+
       return (
-        <Accordion key={item.title} type="single" collapsible defaultValue={isChildActive ? item.title : undefined} className="w-full">
+        <Accordion
+          key={item.title}
+          type="single"
+          collapsible
+          defaultValue={isChildActive ? item.title : undefined}
+          className="w-full"
+        >
           <AccordionItem value={item.title} className="border-none">
             <AccordionTrigger
               className={cn(
-                'flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&[data-state=open]>svg:last-child]:rotate-180',
+                "flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&[data-state=open]>svg:last-child]:rotate-180",
                 isActive &&
-                  'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
+                  "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
               )}
             >
               {item.icon && <item.icon className="size-4 shrink-0" />}
@@ -56,9 +71,9 @@ export function NavMenu() {
                     <Link
                       href={child.href!}
                       className={cn(
-                        'flex items-center gap-2 rounded-md p-2 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                        "flex items-center gap-2 rounded-md p-2 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                         pathname === child.href &&
-                          'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
+                          "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
                       )}
                     >
                       {child.title}
@@ -71,14 +86,11 @@ export function NavMenu() {
         </Accordion>
       );
     }
-    
+
     return (
       <SidebarMenuItem key={item.title}>
         <Link href={item.href!} passHref>
-          <SidebarMenuButton
-            isActive={isActive}
-            tooltip={item.title}
-          >
+          <SidebarMenuButton isActive={isActive} tooltip={item.title}>
             {item.icon && <item.icon />}
             <span>{item.title}</span>
           </SidebarMenuButton>
@@ -88,8 +100,6 @@ export function NavMenu() {
   };
 
   return (
-    <SidebarMenu>
-      {menuItems.map((item) => renderMenuItem(item))}
-    </SidebarMenu>
+    <SidebarMenu>{menuItems.map((item) => renderMenuItem(item))}</SidebarMenu>
   );
 }
