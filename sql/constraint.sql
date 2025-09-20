@@ -60,3 +60,9 @@ ALTER TABLE
     lop_hoc_phan
 ADD
     CONSTRAINT UQ_LopHocPhan UNIQUE (ma_mh, ma_gv, ma_hoc_ky, ma_phong);
+
+-- mỗi sinh viên chỉ có thể đăng ký một lần duy nhất một lớp học phần.
+ALTER TABLE
+    ket_qua
+ADD
+    CONSTRAINT UQ_ket_qua UNIQUE (ma_sv, ma_lop_hp);

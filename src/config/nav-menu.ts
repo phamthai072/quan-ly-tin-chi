@@ -47,7 +47,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: GraduationCap,
   },
   {
-    title: "Môn học - Ok",
+    title: "Môn học - thiếu môn tiên quyết",
     href: "/subjects",
     icon: BookCopy,
   },
@@ -109,7 +109,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: FileText,
   },
   {
-    title: "Đăng ký tín chỉ",
+    title: "Đăng ký tín chỉ - Ok",
     href: "/course-registration",
     icon: BookCopy,
   },

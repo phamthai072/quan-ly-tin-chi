@@ -12,28 +12,31 @@ USE QuanLyTinChi;
 --   4. Không học quá 3 môn ngoài chuyên ngành (trừ môn cơ bản)
 --   5. Số sinh viên trong lớp không vượt quá sức chứa phòng học
 -- =============================================
-CREATE PROCEDURE proc_dang_ky_lop @ma_sv CHAR(15),
-@ma_lop_hp CHAR(10) AS BEGIN
+CREATE PROCEDURE proc_dang_ky_lop @ma_sv NVARCHAR(15),
+@ma_lop_hp NVARCHAR(10) AS BEGIN
 SET
     NOCOUNT ON;
 
 BEGIN TRY BEGIN TRANSACTION;
 
-if not exists(
-    select
+-- 0. Kiểm tra sinh viên tồn tại
+IF NOT EXISTS (
+    SELECT
         1
-    from
-        sinh_vien sv
-    where
-        sv.ma_sv = @ma_sv
-) begin raiserror(N'Mã sinh viên không tồn tại: %s', 16, 1, @ma_sv);
+    FROM
+        sinh_vien
+    WHERE
+        ma_sv = @ma_sv
+) BEGIN RAISERROR(N'Mã sinh viên không tồn tại: %s', 16, 1, @ma_sv);
 
-return;
+ROLLBACK TRANSACTION;
 
-end -- Lấy thông tin lớp học phần
-DECLARE @ma_hoc_ky CHAR(10),
-@ma_mh CHAR(10),
-@ma_phong CHAR(10);
+RETURN;
+
+END -- Lấy thông tin lớp học phần
+DECLARE @ma_hoc_ky NVARCHAR(10),
+@ma_mh NVARCHAR(20),
+@ma_phong NVARCHAR(10);
 
 SELECT
     @ma_hoc_ky = ma_hoc_ky,
@@ -50,6 +53,8 @@ IF @ma_mh IS NULL BEGIN RAISERROR(
     1,
     @ma_lop_hp
 );
+
+ROLLBACK TRANSACTION;
 
 RETURN;
 
@@ -69,6 +74,8 @@ IF EXISTS (
     16,
     1
 );
+
+ROLLBACK TRANSACTION;
 
 RETURN;
 
@@ -95,11 +102,12 @@ WHERE
     ma_mh = @ma_mh;
 
 IF (@tong_tin_chi + @tin_chi_moi) > 20 BEGIN RAISERROR(
-    N'Tổng số tín chỉ vượt quá 20 tín chỉ trong học kỳ: %s tín chỉ',
+    N'Tổng số tín chỉ vượt quá 20 trong học kỳ.',
     16,
-    1,
-    @tong_tin_chi
+    1
 );
+
+ROLLBACK TRANSACTION;
 
 RETURN;
 
@@ -107,34 +115,55 @@ END -- 3. Kiểm tra môn tiên quyết
 DECLARE @ds_mon_tien_quyet NVARCHAR(MAX);
 
 SELECT
-    @ds_mon_tien_quyet = STRING_AGG(ten_mh, ', ')
+    @ds_mon_tien_quyet = STRING_AGG(mh.ten_mh, ', ')
 FROM
-    (
+    mon_tien_quyet mtq
+    JOIN mon_hoc mh ON mh.ma_mh = mtq.ma_mh_tien_quyet
+WHERE
+    mtq.ma_mh = @ma_mh
+    AND NOT EXISTS (
         SELECT
-            DISTINCT mh.ten_mh
+            1
         FROM
-            mon_tien_quyet mtq
-            JOIN mon_hoc mh ON mh.ma_mh = mtq.ma_mh_tien_quyet
-            JOIN lop_hoc_phan lhp_mtq ON lhp_mtq.ma_mh = mtq.ma_mh_tien_quyet
-            LEFT JOIN ket_qua kq_mtq ON kq_mtq.ma_sv = @ma_sv
-            AND kq_mtq.ma_lop_hp = lhp_mtq.ma_lop_hp
-            AND kq_mtq.diem >= 5
+            ket_qua kq
+            JOIN lop_hoc_phan lhp ON kq.ma_lop_hp = lhp.ma_lop_hp
         WHERE
-            mtq.ma_mh = @ma_mh
-            AND kq_mtq.ma_lop_hp IS NULL
-    ) AS t;
+            kq.ma_sv = @ma_sv
+            AND lhp.ma_mh = mtq.ma_mh_tien_quyet
+            AND kq.diem >= 5
+    );
 
 IF @ds_mon_tien_quyet IS NOT NULL BEGIN RAISERROR(
-    N'Sinh viên chưa đạt các môn tiên quyết sau: %s',
+    N'Sinh viên chưa đạt các môn tiên quyết: %s',
     16,
     1,
     @ds_mon_tien_quyet
 );
 
+ROLLBACK TRANSACTION;
+
 RETURN;
 
 END -- 4. Kiểm tra số môn ngoài chuyên ngành
-DECLARE @so_mon_ngoai_nganh INT;
+DECLARE @so_mon_ngoai_nganh INT,
+@ma_chuyen_nganh_sv NVARCHAR(10),
+@loai_mon NVARCHAR(20),
+@ma_chuyen_nganh_mh NVARCHAR(10);
+
+SELECT
+    @ma_chuyen_nganh_sv = ma_chuyen_nganh
+FROM
+    sinh_vien
+WHERE
+    ma_sv = @ma_sv;
+
+SELECT
+    @loai_mon = loai,
+    @ma_chuyen_nganh_mh = ma_chuyen_nganh
+FROM
+    mon_hoc
+WHERE
+    ma_mh = @ma_mh;
 
 SELECT
     @so_mon_ngoai_nganh = COUNT(*)
@@ -142,48 +171,18 @@ FROM
     ket_qua kq
     JOIN lop_hoc_phan lhp ON kq.ma_lop_hp = lhp.ma_lop_hp
     JOIN mon_hoc mh ON lhp.ma_mh = mh.ma_mh
-    JOIN sinh_vien sv ON sv.ma_sv = kq.ma_sv
-    JOIN chuyen_nganh cn ON cn.ma_chuyen_nganh = sv.ma_chuyen_nganh
 WHERE
     kq.ma_sv = @ma_sv
     AND lhp.ma_hoc_ky = @ma_hoc_ky
     AND mh.loai = N'chuyên ngành'
-    AND mh.ma_khoa <> cn.ma_khoa;
+    AND mh.ma_chuyen_nganh <> @ma_chuyen_nganh_sv;
 
-SELECT
+SET
     @so_mon_ngoai_nganh = ISNULL(@so_mon_ngoai_nganh, 0);
-
--- Kiểm tra môn sắp đăng ký cũng ngoài ngành
-DECLARE @ma_khoa_sv CHAR(10),
-@loai_mon NVARCHAR(20);
-
-SELECT
-    @ma_khoa_sv = cn.ma_khoa
-FROM
-    sinh_vien sv
-    JOIN chuyen_nganh cn ON cn.ma_chuyen_nganh = sv.ma_chuyen_nganh
-WHERE
-    sv.ma_sv = @ma_sv;
-
-SELECT
-    @loai_mon = loai
-FROM
-    mon_hoc
-WHERE
-    ma_mh = @ma_mh;
-
-DECLARE @ma_khoa_mh CHAR(10);
-
-SELECT
-    @ma_khoa_mh = ma_khoa
-FROM
-    mon_hoc
-WHERE
-    ma_mh = @ma_mh;
 
 IF (
     @loai_mon = N'chuyên ngành'
-    AND @ma_khoa_mh <> @ma_khoa_sv
+    AND @ma_chuyen_nganh_mh <> @ma_chuyen_nganh_sv
     AND @so_mon_ngoai_nganh >= 3
 ) BEGIN RAISERROR(
     N'Sinh viên đã đăng ký đủ 3 môn ngoài chuyên ngành.',
@@ -191,9 +190,11 @@ IF (
     1
 );
 
+ROLLBACK TRANSACTION;
+
 RETURN;
 
-END -- 5. Kiểm tra số sinh viên trong lớp <= sức chứa
+END -- 5. Kiểm tra sức chứa lớp học
 DECLARE @so_sv_lop INT,
 @suc_chua INT;
 
@@ -216,6 +217,8 @@ IF @so_sv_lop >= @suc_chua BEGIN RAISERROR(
     16,
     1
 );
+
+ROLLBACK TRANSACTION;
 
 RETURN;
 

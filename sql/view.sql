@@ -1,10 +1,3 @@
--- vw_canh_bao_sinh_vien – Danh sách sinh viên bị cảnh báo (TB < ngưỡng hoặc nợ tín chỉ > ngưỡng).
--- vw_ket_qua_sinh_vien – Kết quả học tập chi tiết (môn, điểm, học kỳ, qua/rớt).
--- vw_dtb_sinh_vien_hoc_ky – Điểm trung bình từng học kỳ của sinh viên.
--- vw_dtb_sinh_vien_tich_luy – Điểm trung bình tích lũy của sinh viên.
--- vw_thong_ke_sinh_vien_khoa – Thống kê điểm TB + số tín chỉ nợ theo khoa.
--- vw_lich_day_giang_vien – Lịch dạy của giảng viên (môn, lớp, phòng, thời gian).
--- vw_luong_giang_vien – Danh sách giảng viên, lương và cảnh báo giờ dạy.
 IF OBJECT_ID('vw_thong_ke_su_dung_phong', 'V') IS NOT NULL DROP VIEW vw_thong_ke_su_dung_phong;
 
 CREATE VIEW vw_thong_ke_su_dung_phong AS WITH RoomUsageStats AS (
@@ -68,3 +61,28 @@ FROM
     LEFT JOIN giang_vien gv ON gv.ma_gv = lhp.ma_gv
     LEFT JOIN phong_hoc ph ON ph.ma_phong = lhp.ma_phong
     LEFT JOIN mon_hoc mh ON mh.ma_mh = lhp.ma_mh;
+
+-- danh sách lớp học phần có thể đăng ký và đã đăng ký của sinh viên ở 1 học kỳ
+CREATE
+OR ALTER VIEW vw_ds_lhp_sinh_vien AS
+SELECT
+    sv.ma_sv,
+    sv.ho_ten_sv,
+    lhp.ma_lop_hp,
+    gv.ma_gv,
+    gv.ho_ten_gv,
+    mh.ma_mh,
+    mh.ten_mh,
+    mh.so_tin_chi,
+    lhp.ma_hoc_ky,
+    CASE
+        WHEN kq.ma_sv IS NOT NULL THEN 1
+        ELSE 0
+    END AS trang_thai
+FROM
+    sinh_vien sv
+    CROSS JOIN lop_hoc_phan lhp
+    INNER JOIN mon_hoc mh ON lhp.ma_mh = mh.ma_mh
+    LEFT JOIN ket_qua kq ON sv.ma_sv = kq.ma_sv
+    AND lhp.ma_lop_hp = kq.ma_lop_hp
+    left join giang_vien gv on gv.ma_gv = lhp.ma_gv;

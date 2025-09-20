@@ -1,6 +1,41 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -8,26 +43,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { useApi } from '@/hooks/use-api';
-import { toast } from '@/hooks/use-toast';
-import { useRenderCount } from '@/hooks/useRenderCount';
+} from "@/components/ui/table";
+import { useApi } from "@/hooks/use-api";
+import { toast } from "@/hooks/use-toast";
+import { useRenderCount } from "@/hooks/useRenderCount";
+import { MoreHorizontal, Search } from "lucide-react";
+import * as React from "react";
 
 type Student = {
   ma_sv: string;
@@ -45,28 +66,18 @@ type Semester = {
   ngay_ket_thuc: string;
 };
 
-type CourseSection = {
+type CourseRegistrationItem = {
+  ma_sv: string;
+  ho_ten_sv: string;
   ma_lop_hp: string;
+  ma_gv: string;
+  ho_ten_gv: string;
   ma_mh: string;
   ten_mh: string;
   so_tin_chi: number;
-  ho_ten_gv: string;
   ma_hoc_ky: string;
-  ma_phong: string;
-  ten_phong: string;
-  suc_chua: number;
-  so_sv_hien_tai: number;
-  lop_loai: string;
-  ten_khoa: string;
-};
-
-type RegisteredCourse = {
-  ma_lop_hp: string;
-  ma_mh: string;
-  ten_mh: string;
-  so_tin_chi: number;
-  ho_ten_gv: string;
-  diem: number | null;
+  trang_thai: number; // 0: chưa đăng ký, 1: đã đăng ký
+  diem?: number | null; // Điểm số cho môn đã đăng ký
 };
 
 export function CourseRegistrationClientPage() {
@@ -75,15 +86,19 @@ export function CourseRegistrationClientPage() {
   const [reload, setReload] = React.useState(true);
   const [students, setStudents] = React.useState<Student[]>([]);
   const [semesters, setSemesters] = React.useState<Semester[]>([]);
-  const [sections, setSections] = React.useState<CourseSection[]>([]);
-  const [registeredCourses, setRegisteredCourses] = React.useState<RegisteredCourse[]>([]);
-  const [selectedStudent, setSelectedStudent] = React.useState<string>('');
-  const [selectedSemester, setSelectedSemester] = React.useState<string>('');
-  const [selectedSections, setSelectedSections] = React.useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [courseData, setCourseData] = React.useState<CourseRegistrationItem[]>(
+    []
+  );
+  const [selectedStudent, setSelectedStudent] = React.useState<string>("");
+  const [selectedSemester, setSelectedSemester] = React.useState<string>("");
+  const [selectedSections, setSelectedSections] = React.useState<Set<string>>(
+    new Set()
+  );
+  const [searchQuery, setSearchQuery] = React.useState("");
   const [confirmDialog, setConfirmDialog] = React.useState(false);
   const [unregisterDialog, setUnregisterDialog] = React.useState(false);
-  const [selectedCourseToUnregister, setSelectedCourseToUnregister] = React.useState<string>('');
+  const [selectedCourseToUnregister, setSelectedCourseToUnregister] =
+    React.useState<string>("");
 
   // Fetch initial data
   React.useEffect(() => {
@@ -96,7 +111,8 @@ export function CourseRegistrationClientPage() {
           "Content-Type": "application/json",
         },
         body: {
-          query: "SELECT ma_sv, ho_ten_sv, ma_chuyen_nganh, ma_khoa_hoc, he_dao_tao FROM sinh_vien ORDER BY ho_ten_sv",
+          query:
+            "SELECT ma_sv, ho_ten_sv, ma_chuyen_nganh, ma_khoa_hoc, he_dao_tao FROM sinh_vien ORDER BY ho_ten_sv",
         },
       });
 
@@ -112,7 +128,8 @@ export function CourseRegistrationClientPage() {
           "Content-Type": "application/json",
         },
         body: {
-          query: "SELECT ma_hk, ten_hk, nam_hoc, ngay_bat_dau, ngay_ket_thuc FROM hoc_ky ORDER BY ngay_bat_dau DESC",
+          query:
+            "SELECT ma_hk, ten_hk, nam_hoc, ngay_bat_dau, ngay_ket_thuc FROM hoc_ky ORDER BY ngay_bat_dau DESC",
         },
       });
 
@@ -127,44 +144,41 @@ export function CourseRegistrationClientPage() {
   // Fetch available course sections when student and semester are selected
   React.useEffect(() => {
     if (selectedStudent && selectedSemester) {
-      fetchAvailableSections();
-      fetchRegisteredCourses();
+      fetchCourseData();
     }
   }, [selectedStudent, selectedSemester, reload]);
 
-  const fetchAvailableSections = async () => {
+  const fetchCourseData = async () => {
     let query = `
       SELECT 
+        sv.ma_sv,
+        sv.ho_ten_sv,
         lhp.ma_lop_hp,
-        lhp.ma_mh,
+        gv.ma_gv,
+        gv.ho_ten_gv,
+        mh.ma_mh,
         mh.ten_mh,
         mh.so_tin_chi,
-        gv.ho_ten_gv,
         lhp.ma_hoc_ky,
-        lhp.ma_phong,
-        ph.ten_phong,
-        ph.suc_chua,
-        COALESCE(COUNT(kq.ma_sv), 0) as so_sv_hien_tai,
-        mh.loai as lop_loai,
-        k.ten_khoa
-      FROM lop_hoc_phan lhp
-      INNER JOIN mon_hoc mh ON lhp.ma_mh = mh.ma_mh
-      INNER JOIN giang_vien gv ON lhp.ma_gv = gv.ma_gv
-      INNER JOIN phong_hoc ph ON lhp.ma_phong = ph.ma_phong
-      INNER JOIN khoa k ON mh.ma_khoa = k.ma_khoa
-      LEFT JOIN ket_qua kq ON lhp.ma_lop_hp = kq.ma_lop_hp
-      WHERE lhp.ma_hoc_ky = N'${selectedSemester}'
+        CASE
+            WHEN kq.ma_sv IS NOT NULL THEN 1
+            ELSE 0
+        END AS trang_thai,
+        kq.diem
+      FROM
+        sinh_vien sv
+        CROSS JOIN lop_hoc_phan lhp
+        INNER JOIN mon_hoc mh ON lhp.ma_mh = mh.ma_mh
+        LEFT JOIN ket_qua kq ON sv.ma_sv = kq.ma_sv AND lhp.ma_lop_hp = kq.ma_lop_hp
+        LEFT JOIN giang_vien gv ON gv.ma_gv = lhp.ma_gv
+      WHERE sv.ma_sv = N'${selectedStudent}' AND lhp.ma_hoc_ky = N'${selectedSemester}'
     `;
 
     if (searchQuery) {
       query += ` AND (mh.ten_mh LIKE N'%${searchQuery}%' OR lhp.ma_lop_hp LIKE N'%${searchQuery}%' OR gv.ho_ten_gv LIKE N'%${searchQuery}%')`;
     }
 
-    query += `
-      GROUP BY lhp.ma_lop_hp, lhp.ma_mh, mh.ten_mh, mh.so_tin_chi, gv.ho_ten_gv, 
-               lhp.ma_hoc_ky, lhp.ma_phong, ph.ten_phong, ph.suc_chua, mh.loai, k.ten_khoa
-      ORDER BY mh.ten_mh
-    `;
+    query += ` ORDER BY mh.ten_mh, trang_thai DESC`;
 
     const response = await apiCall({
       endpoint: `/api/query`,
@@ -176,51 +190,29 @@ export function CourseRegistrationClientPage() {
     });
 
     if (response?.success) {
-      setSections(response.result.recordsets[0] || []);
+      setCourseData(response.result.recordsets[0] || []);
     } else {
-      console.error('Lỗi khi tải danh sách lớp học phần:', response?.error);
-    }
-  };
-
-  const fetchRegisteredCourses = async () => {
-    const query = `
-      SELECT 
-        kq.ma_lop_hp,
-        lhp.ma_mh,
-        mh.ten_mh,
-        mh.so_tin_chi,
-        gv.ho_ten_gv,
-        kq.diem
-      FROM ket_qua kq
-      INNER JOIN lop_hoc_phan lhp ON kq.ma_lop_hp = lhp.ma_lop_hp
-      INNER JOIN mon_hoc mh ON lhp.ma_mh = mh.ma_mh
-      INNER JOIN giang_vien gv ON lhp.ma_gv = gv.ma_gv
-      WHERE kq.ma_sv = N'${selectedStudent}' AND lhp.ma_hoc_ky = N'${selectedSemester}'
-      ORDER BY mh.ten_mh
-    `;
-
-    const response = await apiCall({
-      endpoint: `/api/query`,
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: { query },
-    });
-
-    if (response?.success) {
-      setRegisteredCourses(response.result.recordsets[0] || []);
+      console.error("Lỗi khi tải danh sách lớp học phần:", response?.error);
     }
   };
 
   const handleSearch = () => {
     if (selectedStudent && selectedSemester) {
-      fetchAvailableSections();
+      fetchCourseData();
     }
   };
 
+  // Tách dữ liệu thành đã đăng ký và chưa đăng ký
+  const registeredCourses = React.useMemo(() => {
+    return courseData.filter((item) => item.trang_thai === 1);
+  }, [courseData]);
+
+  const availableCourses = React.useMemo(() => {
+    return courseData.filter((item) => item.trang_thai === 0);
+  }, [courseData]);
+
   const toggleSelection = (sectionId: string) => {
-    setSelectedSections(prev => {
+    setSelectedSections((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(sectionId)) {
         newSet.delete(sectionId);
@@ -233,10 +225,10 @@ export function CourseRegistrationClientPage() {
 
   const totalCredits = React.useMemo(() => {
     return Array.from(selectedSections).reduce((total, sectionId) => {
-      const section = sections.find(s => s.ma_lop_hp === sectionId);
-      return total + (section?.so_tin_chi || 0);
+      const course = availableCourses.find((c) => c.ma_lop_hp === sectionId);
+      return total + (course?.so_tin_chi || 0);
     }, 0);
-  }, [selectedSections, sections]);
+  }, [selectedSections, availableCourses]);
 
   const totalRegisteredCredits = React.useMemo(() => {
     return registeredCourses.reduce((total, course) => {
@@ -271,12 +263,18 @@ export function CourseRegistrationClientPage() {
         if (response?.success) {
           successCount++;
         } else {
-          const section = sections.find(s => s.ma_lop_hp === sectionId);
-          errorMessages.push(`${section?.ten_mh || sectionId}: ${response?.error || 'Lỗi không xác định'}`);
+          const course = availableCourses.find(
+            (c) => c.ma_lop_hp === sectionId
+          );
+          errorMessages.push(
+            `${course?.ten_mh || sectionId}: ${
+              response?.error || "Lỗi không xác định"
+            }`
+          );
         }
       } catch (error) {
-        const section = sections.find(s => s.ma_lop_hp === sectionId);
-        errorMessages.push(`${section?.ten_mh || sectionId}: Lỗi hệ thống`);
+        const course = availableCourses.find((c) => c.ma_lop_hp === sectionId);
+        errorMessages.push(`${course?.ten_mh || sectionId}: Lỗi hệ thống`);
       }
     }
 
@@ -285,14 +283,14 @@ export function CourseRegistrationClientPage() {
         title: `Đăng ký thành công ${successCount} lớp học phần`,
       });
       setSelectedSections(new Set());
-      setReload(prev => !prev);
+      setReload((prev) => !prev);
     }
 
     if (errorMessages.length > 0) {
       toast({
         title: "Một số lớp đăng ký thất bại",
-        description: errorMessages.join('\n'),
-        variant: "destructive"
+        description: errorMessages.join("\n"),
+        variant: "destructive",
       });
     }
 
@@ -318,28 +316,24 @@ export function CourseRegistrationClientPage() {
         toast({
           title: "Hủy đăng ký thành công",
         });
-        setReload(prev => !prev);
+        setReload((prev) => !prev);
       } else {
         toast({
           title: "Hủy đăng ký thất bại",
           description: response?.error || "Lỗi hệ thống",
-          variant: "destructive"
+          variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "Hủy đăng ký thất bại",
         description: "Lỗi hệ thống",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
 
     setUnregisterDialog(false);
-    setSelectedCourseToUnregister('');
-  };
-
-  const isAlreadyRegistered = (sectionId: string) => {
-    return registeredCourses.some(course => course.ma_lop_hp === sectionId);
+    setSelectedCourseToUnregister("");
   };
 
   return (
@@ -351,17 +345,19 @@ export function CourseRegistrationClientPage() {
       <Card>
         <CardHeader>
           <CardTitle>Thông tin sinh viên và học kỳ</CardTitle>
-          <CardDescription>Chọn sinh viên và học kỳ để xem danh sách lớp học phần.</CardDescription>
+          <CardDescription>
+            Chọn sinh viên và học kỳ để xem danh sách lớp học phần.
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4">
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <label>Sinh viên</label>
             <Select value={selectedStudent} onValueChange={setSelectedStudent}>
               <SelectTrigger>
                 <SelectValue placeholder="Chọn sinh viên" />
               </SelectTrigger>
               <SelectContent>
-                {students.map(s => (
+                {students.map((s) => (
                   <SelectItem key={s.ma_sv} value={s.ma_sv}>
                     {s.ho_ten_sv} - {s.ma_sv}
                   </SelectItem>
@@ -369,14 +365,17 @@ export function CourseRegistrationClientPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <label>Học kỳ</label>
-            <Select value={selectedSemester} onValueChange={setSelectedSemester}>
+            <Select
+              value={selectedSemester}
+              onValueChange={setSelectedSemester}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn học kỳ" />
               </SelectTrigger>
               <SelectContent>
-                {semesters.map(s => (
+                {semesters.map((s) => (
                   <SelectItem key={s.ma_hk} value={s.ma_hk}>
                     {s.ten_hk} - {s.nam_hoc}
                   </SelectItem>
@@ -405,7 +404,9 @@ export function CourseRegistrationClientPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Lớp học phần đã đăng ký (Tổng: {totalRegisteredCredits} tín chỉ)</CardTitle>
+              <CardTitle>
+                Lớp học phần đã đăng ký (Tổng: {totalRegisteredCredits} tín chỉ)
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -431,13 +432,21 @@ export function CourseRegistrationClientPage() {
                   ) : registeredCourses.length > 0 ? (
                     registeredCourses.map((course) => (
                       <TableRow key={course.ma_lop_hp}>
-                        <TableCell className="font-medium">{course.ma_lop_hp}</TableCell>
+                        <TableCell className="font-medium">
+                          {course.ma_lop_hp}
+                        </TableCell>
                         <TableCell>{course.ten_mh}</TableCell>
                         <TableCell>{course.so_tin_chi}</TableCell>
                         <TableCell>{course.ho_ten_gv}</TableCell>
                         <TableCell>
-                          {course.diem !== null ? (
-                            <Badge variant={course.diem >= 5 ? "default" : "destructive"}>
+                          {course.diem !== null && course.diem !== undefined ? (
+                            <Badge
+                              variant={
+                                (course.diem || 0) >= 5
+                                  ? "default"
+                                  : "destructive"
+                              }
+                            >
                               {course.diem}
                             </Badge>
                           ) : (
@@ -455,7 +464,9 @@ export function CourseRegistrationClientPage() {
                               <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                               <DropdownMenuItem
                                 onClick={() => {
-                                  setSelectedCourseToUnregister(course.ma_lop_hp);
+                                  setSelectedCourseToUnregister(
+                                    course.ma_lop_hp
+                                  );
                                   setUnregisterDialog(true);
                                 }}
                                 className="text-destructive"
@@ -478,7 +489,7 @@ export function CourseRegistrationClientPage() {
               </Table>
             </CardContent>
           </Card>
-      
+
           <Card>
             <CardHeader>
               <CardTitle>Danh sách lớp học phần có thể đăng ký</CardTitle>
@@ -487,7 +498,7 @@ export function CourseRegistrationClientPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className='w-[50px]'>Chọn</TableHead>
+                    <TableHead className="w-[50px]">Chọn</TableHead>
                     <TableHead>Mã lớp</TableHead>
                     <TableHead>Tên môn học</TableHead>
                     <TableHead>Số TC</TableHead>
@@ -505,40 +516,37 @@ export function CourseRegistrationClientPage() {
                         Đang tải...
                       </TableCell>
                     </TableRow>
-                  ) : sections.length > 0 ? (
-                    sections.map((section) => {
-                      const alreadyRegistered = isAlreadyRegistered(section.ma_lop_hp);
-                      const isFull = section.so_sv_hien_tai >= section.suc_chua;
-                      
+                  ) : availableCourses.length > 0 ? (
+                    availableCourses.map((course) => {
                       return (
-                        <TableRow 
-                          key={section.ma_lop_hp} 
-                          data-state={selectedSections.has(section.ma_lop_hp) ? "selected" : ""}
-                          className={alreadyRegistered ? "opacity-50" : ""}
+                        <TableRow
+                          key={course.ma_lop_hp}
+                          data-state={
+                            selectedSections.has(course.ma_lop_hp)
+                              ? "selected"
+                              : ""
+                          }
                         >
                           <TableCell>
-                            <Checkbox 
-                              checked={selectedSections.has(section.ma_lop_hp)}
-                              onCheckedChange={() => toggleSelection(section.ma_lop_hp)}
-                              disabled={alreadyRegistered || isFull}
+                            <Checkbox
+                              checked={selectedSections.has(course.ma_lop_hp)}
+                              onCheckedChange={() =>
+                                toggleSelection(course.ma_lop_hp)
+                              }
                             />
                           </TableCell>
-                          <TableCell className="font-medium">{section.ma_lop_hp}</TableCell>
-                          <TableCell>{section.ten_mh}</TableCell>
-                          <TableCell>{section.so_tin_chi}</TableCell>
-                          <TableCell>
-                            <Badge variant={isFull ? "destructive" : "default"}>
-                              {section.so_sv_hien_tai}/{section.suc_chua}
-                            </Badge>
+                          <TableCell className="font-medium">
+                            {course.ma_lop_hp}
                           </TableCell>
-                          <TableCell>{section.ten_phong}</TableCell>
-                          <TableCell>{section.ho_ten_gv}</TableCell>
+                          <TableCell>{course.ten_mh}</TableCell>
+                          <TableCell>{course.so_tin_chi}</TableCell>
+                          <TableCell>-</TableCell>
+                          <TableCell>-</TableCell>
+                          <TableCell>{course.ho_ten_gv}</TableCell>
                           <TableCell>
-                            <Badge variant={section.lop_loai === 'cơ bản' ? "secondary" : "outline"}>
-                              {section.lop_loai}
-                            </Badge>
+                            <Badge variant="outline">Môn học</Badge>
                           </TableCell>
-                          <TableCell>{section.ten_khoa}</TableCell>
+                          <TableCell>-</TableCell>
                         </TableRow>
                       );
                     })
@@ -546,7 +554,7 @@ export function CourseRegistrationClientPage() {
                     <TableRow>
                       {renderCount < 1 && (
                         <TableCell colSpan={9} className="text-center">
-                          Không có dữ liệu
+                          Không có lớp học phần có thể đăng ký
                         </TableCell>
                       )}
                     </TableRow>
@@ -574,32 +582,41 @@ export function CourseRegistrationClientPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {sections.filter(s => selectedSections.has(s.ma_lop_hp)).map(section => (
-                        <TableRow key={section.ma_lop_hp}>
-                          <TableCell className="font-medium">{section.ma_lop_hp}</TableCell>
-                          <TableCell>{section.ten_mh}</TableCell>
-                          <TableCell>{section.so_tin_chi}</TableCell>
-                          <TableCell>{section.ho_ten_gv}</TableCell>
-                          <TableCell>{section.ten_phong}</TableCell>
-                        </TableRow>
-                      ))}
+                      {availableCourses
+                        .filter((c) => selectedSections.has(c.ma_lop_hp))
+                        .map((course) => (
+                          <TableRow key={course.ma_lop_hp}>
+                            <TableCell className="font-medium">
+                              {course.ma_lop_hp}
+                            </TableCell>
+                            <TableCell>{course.ten_mh}</TableCell>
+                            <TableCell>{course.so_tin_chi}</TableCell>
+                            <TableCell>{course.ho_ten_gv}</TableCell>
+                            <TableCell>-</TableCell>
+                          </TableRow>
+                        ))}
                     </TableBody>
                   </Table>
                 </div>
               ) : (
-                <p className="text-muted-foreground">Bạn chưa chọn lớp học phần nào.</p>
+                <p className="text-muted-foreground">
+                  Bạn chưa chọn lớp học phần nào.
+                </p>
               )}
             </CardContent>
             <CardFooter className="flex justify-between items-center border-t pt-6">
               <div>
-                <span className="font-bold text-lg">Tổng số tín chỉ sẽ đăng ký: {totalCredits}</span>
+                <span className="font-bold text-lg">
+                  Tổng số tín chỉ sẽ đăng ký: {totalCredits}
+                </span>
                 <br />
                 <span className="text-sm text-muted-foreground">
-                  Tổng tín chỉ sau khi đăng ký: {totalRegisteredCredits + totalCredits}
+                  Tổng tín chỉ sau khi đăng ký:{" "}
+                  {totalRegisteredCredits + totalCredits}
                 </span>
               </div>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 disabled={selectedSections.size === 0}
                 onClick={() => setConfirmDialog(true)}
               >
@@ -614,30 +631,37 @@ export function CourseRegistrationClientPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Xác nhận đăng ký</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Bạn có chắc chắn muốn đăng ký {selectedSections.size} lớp học phần đã chọn?
-                  Tổng số tín chỉ sẽ đăng ký: {totalCredits}
+                  Bạn có chắc chắn muốn đăng ký {selectedSections.size} lớp học
+                  phần đã chọn? Tổng số tín chỉ sẽ đăng ký: {totalCredits}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction onClick={onRegister}>Xác nhận đăng ký</AlertDialogAction>
+                <AlertDialogAction onClick={onRegister}>
+                  Xác nhận đăng ký
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
 
           {/* Confirm unregister dialog */}
-          <AlertDialog open={unregisterDialog} onOpenChange={setUnregisterDialog}>
+          <AlertDialog
+            open={unregisterDialog}
+            onOpenChange={setUnregisterDialog}
+          >
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Xác nhận hủy đăng ký</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Bạn có chắc chắn muốn hủy đăng ký lớp học phần này không?
-                  Hành động này không thể hoàn tác.
+                  Bạn có chắc chắn muốn hủy đăng ký lớp học phần này không? Hành
+                  động này không thể hoàn tác.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction onClick={onUnregister}>Xác nhận hủy đăng ký</AlertDialogAction>
+                <AlertDialogAction onClick={onUnregister}>
+                  Xác nhận hủy đăng ký
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
