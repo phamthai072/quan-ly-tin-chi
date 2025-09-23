@@ -1,0 +1,39 @@
+/* Fix for React Select in Modal */
+.react-select-container {
+    position: relative;
+    z-index: 1;
+}
+
+.react-select__menu {
+    z-index: 10000 !important;
+    position: absolute !important;
+}
+
+.react-select__menu-list {
+    max-height: 200px !important;
+}
+
+.react-select__control {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    min-height: 40px;
+}
+
+.react-select__control:hover {
+    border-color: #cbd5e1;
+}
+
+.react-select__control--is-focused {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* Ensure dialog doesn't interfere */
+[data-radix-popper-content-wrapper] {
+    z-index: 50 !important;
+}
+
+/* Specific fixes for shadcn dialog */
+[data-state="open"][data-side] {
+    z-index: 50;
+}

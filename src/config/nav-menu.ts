@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Presentation,
   School,
+  Settings,
   Users,
   Wallet,
 } from "lucide-react";
@@ -32,6 +33,11 @@ export const navMenuItems: NavMenuItem[] = [
     icon: LayoutDashboard,
   },
   {
+    title: "Cài đặt chung",
+    href: "/settings",
+    icon: Settings,
+  },
+  {
     title: "Khoa - Ok",
     href: "/faculties",
     icon: BookCopy,
@@ -47,7 +53,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: GraduationCap,
   },
   {
-    title: "Môn học - thiếu MTT",
+    title: "Môn học - Ok",
     href: "/subjects",
     icon: BookCopy,
   },
@@ -76,6 +82,7 @@ export const navMenuItems: NavMenuItem[] = [
     href: "/schedules",
     icon: CalendarClock,
   },
+
   // ------------------------------------
   {
     title: "Giảng viên",

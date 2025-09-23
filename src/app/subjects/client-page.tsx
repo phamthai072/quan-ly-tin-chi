@@ -1,14 +1,8 @@
 "use client";
 
-import * as React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,43 +11,27 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Search } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { type Subject, type Faculty, type Lecturer } from "@/lib/mock-data";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useApi } from "@/hooks/use-api";
-import { toast } from "@/hooks/use-toast";
 import { useRenderCount } from "@/hooks/useRenderCount";
+import { type Lecturer, type Subject } from "@/lib/mock-data";
+import { MoreHorizontal, PlusCircle, Search } from "lucide-react";
+import * as React from "react";
+import {
+  CreateSubjectModal,
+  DeleteSubjectModal,
+  EditSubjectModal,
+  type OptionType,
+  type SubjectData,
+} from "./components";
 
 export function SubjectsClientPage({
   subjects: initialSubjects,
@@ -69,28 +47,73 @@ export function SubjectsClientPage({
   const renderCount = useRenderCount();
   const { apiCall, isLoading } = useApi();
   const [reload, setReload] = React.useState(true);
-  const [dialog, setDialog] = React.useState(false);
-  const [dialog1, setDialog1] = React.useState(false);
-  const [dialog2, setDialog2] = React.useState(false);
+
+  // Modal states
+  const [createModalOpen, setCreateModalOpen] = React.useState(false);
+  const [editModalOpen, setEditModalOpen] = React.useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+
+  // Data states
   const [subjects, setSubjects] = React.useState(initialSubjects);
   const [majors, setMajors] = React.useState(initialMajors);
   const [allSubjects, setAllSubjects] = React.useState(initialAllSubjects);
   const [lecturers, setLecturers] = React.useState(initialLecturers);
+  const [prerequisites, setPrerequisites] = React.useState<{
+    [key: string]: string[];
+  }>({});
   const [searchQuery, setSearchQuery] = React.useState("");
 
-  const [newSubjectId, setNewSubjectId] = React.useState("");
-  const [newSubjectName, setNewSubjectName] = React.useState("");
-  const [newSubjectCredits, setNewSubjectCredits] = React.useState<number | "">(
-    ""
-  );
-  const [newSubjectMajor, setNewSubjectMajor] = React.useState("");
-  const [newSubjectType, setNewSubjectType] = React.useState("");
+  // Selected subject for edit/delete
+  const [selectedSubject, setSelectedSubject] =
+    React.useState<SubjectData | null>(null);
 
-  const [editingSubject, setEditingSubject] = React.useState<any | null>(null);
+  // Tạo options cho react-select
+  const prerequisiteOptions = React.useMemo((): OptionType[] => {
+    return allSubjects.map((subject: any) => ({
+      value: subject.ma_mh,
+      label: `${subject.ma_mh} - ${subject.ten_mh}`,
+    }));
+  }, [allSubjects]);
 
   const getMajorName = (majorId: string) => {
     const major = majors.find((m) => m.ma_chuyen_nganh === majorId);
     return major ? `${major.ten_chuyen_nganh} (${major.ten_khoa})` : majorId;
+  };
+
+  const loadPrerequisites = async () => {
+    const response = await apiCall({
+      endpoint: `/api/query`,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: {
+        query: `SELECT mtq.ma_mh, mtq.ma_mh_tien_quyet, mh.ten_mh as ten_mh_tien_quyet
+                 FROM mon_tien_quyet mtq 
+                 LEFT JOIN mon_hoc mh ON mtq.ma_mh_tien_quyet = mh.ma_mh`,
+      },
+    });
+
+    if (response?.success) {
+      const prerequisiteData = response.result.recordsets[0];
+      const prerequisiteMap: { [key: string]: string[] } = {};
+
+      prerequisiteData.forEach((item: any) => {
+        if (!prerequisiteMap[item.ma_mh]) {
+          prerequisiteMap[item.ma_mh] = [];
+        }
+        prerequisiteMap[item.ma_mh].push(
+          `${item.ma_mh_tien_quyet} - ${item.ten_mh_tien_quyet}`
+        );
+      });
+
+      setPrerequisites(prerequisiteMap);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setReload((prev) => !prev);
+    await loadPrerequisites();
   };
 
   const handleSearch = async () => {
@@ -112,12 +135,9 @@ export function SubjectsClientPage({
                    OR mh.loai LIKE N'%${searchQuery}%'`,
         },
       });
-      console.log("response: ", response);
       if (response?.success) {
-        console.log("success: ", response?.result?.recordsets[0]);
         setSubjects(response?.result?.recordsets[0]);
       } else {
-        console.log("error: ", response?.error);
         console.error(response.error);
       }
     } else {
@@ -134,12 +154,9 @@ export function SubjectsClientPage({
                    ORDER BY mh.ma_mh`,
         },
       });
-      console.log("response: ", response);
       if (response?.success) {
-        console.log("success: ", response?.result?.recordsets[0]);
         setSubjects(response?.result?.recordsets[0]);
       } else {
-        console.log("error: ", response?.error);
         console.error(response.error);
       }
     }
@@ -187,159 +204,37 @@ export function SubjectsClientPage({
         },
       });
 
-      console.log("subjects response: ", subjectsResponse);
-      console.log("majors response: ", majorsResponse);
-      console.log("lecturers response: ", lecturersResponse);
-
       if (subjectsResponse?.success) {
-        console.log(
-          "subjects success: ",
-          subjectsResponse?.result?.recordsets[0]
-        );
         setSubjects(subjectsResponse?.result?.recordsets[0]);
         setAllSubjects(subjectsResponse?.result?.recordsets[0]);
       } else {
-        console.log("subjects error: ", subjectsResponse?.error);
         console.error(subjectsResponse.error);
       }
 
       if (majorsResponse?.success) {
-        console.log("majors success: ", majorsResponse?.result?.recordsets[0]);
         setMajors(majorsResponse?.result?.recordsets[0]);
       } else {
-        console.log("majors error: ", majorsResponse?.error);
         console.error(majorsResponse.error);
       }
 
       if (lecturersResponse?.success) {
-        console.log(
-          "lecturers success: ",
-          lecturersResponse?.result?.recordsets[0]
-        );
         setLecturers(lecturersResponse?.result?.recordsets[0]);
       } else {
-        console.log("lecturers error: ", lecturersResponse?.error);
         console.error(lecturersResponse.error);
       }
+
+      // Load prerequisites after loading subjects
+      await loadPrerequisites();
     };
 
     fetchData();
   }, [reload]);
 
-  const onCreate = async () => {
-    const response = await apiCall({
-      endpoint: `/api/query`,
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: {
-        query: `INSERT INTO mon_hoc (ma_mh, ten_mh, so_tin_chi, ma_chuyen_nganh, loai) 
-                 VALUES (N'${newSubjectId
-                   ?.toUpperCase()
-                   ?.trim()}', N'${newSubjectName?.trim()}', ${newSubjectCredits}, N'${newSubjectMajor}', N'${newSubjectType}')`,
-      },
-    });
-    console.log("response: ", response);
-    if (response?.success) {
-      console.log("success: ", response?.result?.recordsets[0]);
-      toast({
-        title: "Thêm môn học thành công",
-      });
-      setReload((m) => !m);
-      setDialog((m) => !m);
-      setNewSubjectId("");
-      setNewSubjectName("");
-      setNewSubjectCredits("");
-      setNewSubjectMajor("");
-      setNewSubjectType("");
-    } else {
-      toast({
-        title: "Thêm môn học thất bại",
-        description: response?.error || "Lỗi hệ thống",
-      });
-    }
-  };
-
-  const onUpdate = async () => {
-    if (!editingSubject) {
-      toast({
-        title: "Chưa có thay đổi",
-      });
-      return;
-    }
-
-    const response = await apiCall({
-      endpoint: `/api/query`,
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: {
-        query: `UPDATE mon_hoc 
-                 SET ten_mh = N'${editingSubject.ten_mh}', so_tin_chi = ${editingSubject.so_tin_chi}, ma_chuyen_nganh = N'${editingSubject.ma_chuyen_nganh}', loai = N'${editingSubject.loai}' 
-                 WHERE ma_mh = N'${editingSubject.ma_mh}'`,
-      },
-    });
-    console.log("response: ", response);
-    if (response?.success) {
-      console.log("success: ", response?.result?.recordsets[0]);
-      toast({
-        title: "Cập nhật môn học thành công",
-      });
-      setReload((m) => !m);
-      setDialog1((m) => !m);
-    } else {
-      toast({
-        title: "Cập nhật môn học thất bại",
-        description: response?.error || "Lỗi hệ thống",
-      });
-    }
-  };
-
-  const onDelete = async () => {
-    if (!editingSubject) {
-      toast({
-        title: "Vui lòng chọn môn học để xóa",
-      });
-      return;
-    }
-
-    const response = await apiCall({
-      endpoint: `/api/query`,
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: {
-        query: `DELETE FROM mon_hoc WHERE ma_mh = N'${editingSubject.ma_mh}'`,
-      },
-    });
-    console.log("response: ", response);
-    if (response?.success) {
-      console.log("success: ", response?.result?.recordsets[0]);
-      toast({
-        title: "Xóa môn học thành công",
-      });
-      setReload((m) => !m);
-    } else {
-      toast({
-        title: "Xóa môn học thất bại",
-        description: response?.error || "Lỗi hệ thống",
-      });
-    }
-  };
-
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Quản lý Môn học</h1>
-        <Button
-          onClick={(e) => {
-            e.preventDefault();
-            setDialog((m) => !m);
-          }}
-        >
+        <Button onClick={() => setCreateModalOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" /> Thêm môn học
         </Button>
       </div>
@@ -368,6 +263,7 @@ export function SubjectsClientPage({
                 <TableHead>Số tín chỉ</TableHead>
                 <TableHead>Chuyên ngành - Khoa</TableHead>
                 <TableHead>Loại môn</TableHead>
+                <TableHead>Môn tiên quyết</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -376,7 +272,7 @@ export function SubjectsClientPage({
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     Đang tải...
                   </TableCell>
                 </TableRow>
@@ -405,6 +301,30 @@ export function SubjectsClientPage({
                       </Badge>
                     </TableCell>
                     <TableCell>
+                      <div className="max-w-xs">
+                        {prerequisites[subject.ma_mh] &&
+                        prerequisites[subject.ma_mh].length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {prerequisites[subject.ma_mh].map(
+                              (prerequisite, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  {prerequisite}
+                                </Badge>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">
+                            Không có
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -415,8 +335,8 @@ export function SubjectsClientPage({
                           <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                           <DropdownMenuItem
                             onClick={() => {
-                              setEditingSubject(subject);
-                              setDialog1(true);
+                              setSelectedSubject(subject);
+                              setEditModalOpen(true);
                             }}
                           >
                             Sửa
@@ -424,8 +344,8 @@ export function SubjectsClientPage({
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => {
-                              setEditingSubject(subject);
-                              setDialog2(true);
+                              setSelectedSubject(subject);
+                              setDeleteModalOpen(true);
                             }}
                             className="text-destructive"
                           >
@@ -439,7 +359,7 @@ export function SubjectsClientPage({
               ) : (
                 <TableRow>
                   {renderCount < 1 && (
-                    <TableCell colSpan={6} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                       Không có dữ liệu
                     </TableCell>
                   )}
@@ -447,282 +367,33 @@ export function SubjectsClientPage({
               )}
             </TableBody>
           </Table>
-
-          {/* Thêm môn học mới */}
-          <Dialog
-            open={dialog}
-            onOpenChange={(m) => {
-              if (!m) {
-                // when off
-                setDialog(m);
-                setNewSubjectId("");
-                setNewSubjectName("");
-                setNewSubjectCredits("");
-                setNewSubjectMajor("");
-                setNewSubjectType("");
-              }
-            }}
-          >
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Thêm môn học mới</DialogTitle>
-                <DialogDescription>
-                  Điền thông tin chi tiết của môn học.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="subject-id" className="text-right">
-                    Mã môn học
-                  </Label>
-                  <Input
-                    required
-                    id="subject-id"
-                    value={newSubjectId}
-                    onChange={(e) => setNewSubjectId(e.target.value?.toUpperCase())}
-                    className="col-span-3"
-                    placeholder="VD: CNTT101"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="subject-name" className="text-right">
-                    Tên môn học
-                  </Label>
-                  <Input
-                    id="subject-name"
-                    value={newSubjectName}
-                    onChange={(e) => setNewSubjectName(e.target.value)}
-                    className="col-span-3"
-                    placeholder="VD: Lập trình căn bản"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="subject-credits" className="text-right">
-                    Số tín chỉ
-                  </Label>
-                  <Input
-                    id="subject-credits"
-                    type="number"
-                    value={newSubjectCredits}
-                    onChange={(e) =>
-                      setNewSubjectCredits(
-                        e.target.value === "" ? "" : Number(e.target.value)
-                      )
-                    }
-                    className="col-span-3"
-                    placeholder="3"
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="subject-major" className="text-right">
-                    Chuyên ngành
-                  </Label>
-                  <Select
-                    value={newSubjectMajor}
-                    onValueChange={setNewSubjectMajor}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Chọn chuyên ngành" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {majors.map((major: any) => (
-                        <SelectItem
-                          key={major.ma_chuyen_nganh}
-                          value={major.ma_chuyen_nganh}
-                        >
-                          {major.ten_chuyen_nganh} ({major.ten_khoa})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="subject-type" className="text-right">
-                    Loại môn học
-                  </Label>
-                  <Select
-                    value={newSubjectType}
-                    onValueChange={setNewSubjectType}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Chọn loại môn học" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cơ bản">Cơ bản</SelectItem>
-                      <SelectItem value="chuyên ngành">Chuyên ngành</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" onClick={onCreate}>
-                  Lưu
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {/* Sửa thông tin môn học */}
-          <Dialog
-            open={dialog1}
-            onOpenChange={(m) => {
-              if (!m) {
-                // when off
-                setDialog1(m);
-              }
-            }}
-          >
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Sửa thông tin môn học</DialogTitle>
-                <DialogDescription>
-                  Thay đổi thông tin của môn học.
-                </DialogDescription>
-              </DialogHeader>
-
-              {editingSubject && (
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="subject-id-edit" className="text-right">
-                      Mã môn học
-                    </Label>
-                    <Input
-                      id="subject-id-edit"
-                      disabled
-                      value={editingSubject.ma_mh}
-                      readOnly
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="subject-name-edit" className="text-right">
-                      Tên môn học
-                    </Label>
-                    <Input
-                      id="subject-name-edit"
-                      value={editingSubject.ten_mh}
-                      onChange={(e) =>
-                        setEditingSubject({
-                          ...editingSubject,
-                          ten_mh: e.target.value,
-                        })
-                      }
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label
-                      htmlFor="subject-credits-edit"
-                      className="text-right"
-                    >
-                      Số tín chỉ
-                    </Label>
-                    <Input
-                      id="subject-credits-edit"
-                      type="number"
-                      value={editingSubject.so_tin_chi}
-                      onChange={(e) =>
-                        setEditingSubject({
-                          ...editingSubject,
-                          so_tin_chi: Number(e.target.value),
-                        })
-                      }
-                      className="col-span-3"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="subject-major-edit" className="text-right">
-                      Chuyên ngành
-                    </Label>
-                    <Select
-                      value={editingSubject.ma_chuyen_nganh}
-                      onValueChange={(value) =>
-                        setEditingSubject({
-                          ...editingSubject,
-                          ma_chuyen_nganh: value,
-                        })
-                      }
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Chọn chuyên ngành" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {majors.map((major: any) => (
-                          <SelectItem
-                            key={major.ma_chuyen_nganh}
-                            value={major.ma_chuyen_nganh}
-                          >
-                            {major.ten_chuyen_nganh} ({major.ten_khoa})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="subject-type-edit" className="text-right">
-                      Loại môn học
-                    </Label>
-                    <Select
-                      value={editingSubject.loai}
-                      onValueChange={(value) =>
-                        setEditingSubject({ ...editingSubject, loai: value })
-                      }
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Chọn loại môn học" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cơ bản">Cơ bản</SelectItem>
-                        <SelectItem value="chuyên ngành">
-                          Chuyên ngành
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-
-              <DialogFooter>
-                <Button
-                  className="disabled:opacity-50"
-                  disabled={!editingSubject}
-                  type="button"
-                  onClick={onUpdate}
-                >
-                  Lưu thay đổi
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {/* Xóa môn học */}
-          <AlertDialog
-            open={dialog2}
-            onOpenChange={(m) => {
-              if (!m) {
-                // when off
-                setDialog2(m);
-              }
-            }}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Bạn có chắc không?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Hành động này không thể được hoàn tác. Thao tác này sẽ xóa
-                  vĩnh viễn môn học khỏi hệ thống.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Hủy</AlertDialogCancel>
-                <AlertDialogAction onClick={onDelete}>
-                  Tiếp tục
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </CardContent>
       </Card>
+
+      {/* Modal Components */}
+      <CreateSubjectModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        majors={majors}
+        prerequisiteOptions={prerequisiteOptions}
+        onSuccess={handleRefresh}
+      />
+
+      <EditSubjectModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        subject={selectedSubject}
+        majors={majors}
+        prerequisiteOptions={prerequisiteOptions}
+        onSuccess={handleRefresh}
+      />
+
+      <DeleteSubjectModal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        subject={selectedSubject}
+        onSuccess={handleRefresh}
+      />
     </div>
   );
 }
