@@ -248,7 +248,7 @@ export function SettingsClientPage() {
                           <TableCell className="font-medium">
                             {displayInfo.name}
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell className="text-muted-foreground max-w-sm">
                             {displayInfo.description}
                           </TableCell>
                           <TableCell>
