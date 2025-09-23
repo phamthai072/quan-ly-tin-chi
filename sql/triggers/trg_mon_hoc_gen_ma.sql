@@ -11,7 +11,6 @@ BEGIN
     DECLARE @prefix NVARCHAR(50);
     DECLARE @new_ma_mh NVARCHAR(50);
 
-    -- Lấy thông tin bản ghi được insert (giả định 1 row/lần)
     SELECT TOP 1 
         @ma_chuyen_nganh = i.ma_chuyen_nganh
     FROM inserted i;

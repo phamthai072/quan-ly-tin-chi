@@ -13,7 +13,6 @@ BEGIN
     DECLARE @stt INT;
     DECLARE @new_ma_sv NVARCHAR(50);
 
-    -- Lấy thông tin bản ghi (giả định insert 1 row)
     SELECT TOP 1 
         @ma_chuyen_nganh = i.ma_chuyen_nganh,
         @ma_khoa_hoc = i.ma_khoa_hoc,

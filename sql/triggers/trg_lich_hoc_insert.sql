@@ -13,7 +13,6 @@ BEGIN
     DECLARE @ma_lich_hoc NVARCHAR(20);
     DECLARE @stt INT;
 
-    -- Lấy dữ liệu từ inserted (giả định 1 row/lần insert)
     SELECT TOP 1
         @ma_lop_hp = i.ma_lop_hp,
         @thu = i.thu,

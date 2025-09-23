@@ -15,8 +15,8 @@ AS
                 ELSE 0 
             END) AS so_gio_su_dung
         FROM phong_hoc ph
-        LEFT JOIN lich_hoc lh ON ph.ma_phong = lh.ma_phong
-        LEFT JOIN lop_hoc_phan lhp ON lh.ma_lop_hp = lhp.ma_lop_hp
+        LEFT JOIN lop_hoc_phan lhp ON ph.ma_phong = lhp.ma_phong
+        LEFT JOIN lich_hoc lh ON lhp.ma_lop_hp = lh.ma_lop_hp
         GROUP BY ph.ma_phong, ph.ten_phong, ph.suc_chua, lhp.ma_hoc_ky
     )
     SELECT 
