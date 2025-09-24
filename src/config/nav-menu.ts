@@ -5,7 +5,6 @@ import {
   CalendarClock,
   FileText,
   GraduationCap,
-  LayoutDashboard,
   Presentation,
   School,
   Settings,
@@ -27,13 +26,13 @@ export const navMenuItems: NavMenuItem[] = [
     icon: School,
     isHeader: true,
   },
+  // {
+  //   title: "Tổng quan",
+  //   href: "/dashboard",
+  //   icon: LayoutDashboard,
+  // },
   {
-    title: "Tổng quan",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Cài đặt chung",
+    title: "Cài đặt",
     href: "/settings",
     icon: Settings,
   },
