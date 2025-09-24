@@ -1,18 +1,8 @@
 "use client";
 
-import * as React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -21,9 +11,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useApi } from "@/hooks/use-api";
 import { toast } from "@/hooks/use-toast";
+import * as React from "react";
 
 // Types for database data
 type Student = {
@@ -62,16 +60,16 @@ const daysOfWeek = [
 
 export function SchedulesClientPage() {
   const { apiCall, isLoading } = useApi();
-  
+
   // State
   const [students, setStudents] = React.useState<Student[]>([]);
   const [semesters, setSemesters] = React.useState<Semester[]>([]);
   const [schedules, setSchedules] = React.useState<ScheduleItem[]>([]);
-  
+
   const [selectedStudent, setSelectedStudent] = React.useState("");
   const [selectedSemester, setSelectedSemester] = React.useState("");
   const [studentSearchQuery, setStudentSearchQuery] = React.useState("");
-  
+
   // Load initial data
   React.useEffect(() => {
     const fetchInitialData = async () => {
@@ -120,7 +118,9 @@ export function SchedulesClientPage() {
     if (!studentSearchQuery) return students;
     return students.filter(
       (student) =>
-        student.ho_ten_sv.toLowerCase().includes(studentSearchQuery.toLowerCase()) ||
+        student.ho_ten_sv
+          .toLowerCase()
+          .includes(studentSearchQuery.toLowerCase()) ||
         student.ma_sv.toLowerCase().includes(studentSearchQuery.toLowerCase())
     );
   }, [students, studentSearchQuery]);
@@ -156,7 +156,7 @@ export function SchedulesClientPage() {
                 INNER JOIN mon_hoc mh ON lhp.ma_mh = mh.ma_mh
                 INNER JOIN giang_vien gv ON lhp.ma_gv = gv.ma_gv
                 INNER JOIN lich_hoc lh ON lhp.ma_lop_hp = lh.ma_lop_hp
-                INNER JOIN phong_hoc ph ON lh.ma_phong = ph.ma_phong
+                INNER JOIN phong_hoc ph ON lhp.ma_phong = ph.ma_phong
                 WHERE kq.ma_sv = N'${selectedStudent}' 
                 AND lhp.ma_hoc_ky = N'${selectedSemester}'
                 ORDER BY lh.thu, lh.tiet_bat_dau`,
@@ -169,7 +169,8 @@ export function SchedulesClientPage() {
       if (response?.result?.recordsets[0]?.length === 0) {
         toast({
           title: "Không có lịch học",
-          description: "Sinh viên này chưa đăng ký môn học nào trong học kỳ đã chọn",
+          description:
+            "Sinh viên này chưa đăng ký môn học nào trong học kỳ đã chọn",
         });
       }
     } else {
@@ -196,22 +197,25 @@ export function SchedulesClientPage() {
   const getTimeSlot = (start: number, end: number) => {
     const startTime = 6 + (start - 1) * 0.75; // Assuming each period is 45 minutes starting from 6:00 AM
     const endTime = 6 + (end - 1) * 0.75;
-    
+
     const formatTime = (time: number) => {
       const hours = Math.floor(time);
       const minutes = Math.round((time - hours) * 60);
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      return `${hours.toString().padStart(2, "0")}:${minutes
+        .toString()
+        .padStart(2, "0")}`;
     };
-    
+
     return `${formatTime(startTime)} - ${formatTime(endTime)}`;
   };
 
-  const selectedStudentInfo = students.find(s => s.ma_sv === selectedStudent);
-  const selectedSemesterInfo = semesters.find(s => s.ma_hk === selectedSemester);
+  const selectedStudentInfo = students.find((s) => s.ma_sv === selectedStudent);
+  const selectedSemesterInfo = semesters.find(
+    (s) => s.ma_hk === selectedSemester
+  );
 
   return (
     <div className="space-y-8">
-
       {/* Selection Section */}
       <Card>
         <CardHeader>
@@ -221,25 +225,32 @@ export function SchedulesClientPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Student Selection */}
             <div className="space-y-4">
-                <Label htmlFor="student-select">Chọn Sinh viên</Label>
-                <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn sinh viên" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredStudents.map((student) => (
-                      <SelectItem key={student.ma_sv} value={student.ma_sv}>
-                        {student.ma_sv} - {student.ho_ten_sv} ({student.ten_chuyen_nganh})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <Label htmlFor="student-select">Chọn Sinh viên</Label>
+              <Select
+                value={selectedStudent}
+                onValueChange={setSelectedStudent}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn sinh viên" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredStudents.map((student) => (
+                    <SelectItem key={student.ma_sv} value={student.ma_sv}>
+                      {student.ma_sv} - {student.ho_ten_sv} (
+                      {student.ten_chuyen_nganh})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Semester Selection */}
             <div className="space-y-4">
               <Label htmlFor="semester-select">Chọn Học kỳ</Label>
-              <Select value={selectedSemester} onValueChange={setSelectedSemester}>
+              <Select
+                value={selectedSemester}
+                onValueChange={setSelectedSemester}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn học kỳ" />
                 </SelectTrigger>
@@ -255,8 +266,8 @@ export function SchedulesClientPage() {
           </div>
 
           <div className="flex justify-center">
-            <Button 
-              onClick={fetchSchedule} 
+            <Button
+              onClick={fetchSchedule}
               disabled={!selectedStudent || !selectedSemester || isLoading}
               className="w-full md:w-auto"
             >
@@ -280,7 +291,8 @@ export function SchedulesClientPage() {
                   <strong>Họ tên:</strong> {selectedStudentInfo.ho_ten_sv}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  <strong>Chuyên ngành:</strong> {selectedStudentInfo.ten_chuyen_nganh}
+                  <strong>Chuyên ngành:</strong>{" "}
+                  {selectedStudentInfo.ten_chuyen_nganh}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   <strong>Khóa học:</strong> {selectedStudentInfo.ten_khoa_hoc}
@@ -298,7 +310,12 @@ export function SchedulesClientPage() {
                   <strong>Tổng môn học:</strong> {schedules.length} môn
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  <strong>Tổng tín chỉ:</strong> {schedules.reduce((total, item) => total + item.so_tin_chi, 0)} tín chỉ
+                  <strong>Tổng tín chỉ:</strong>{" "}
+                  {schedules.reduce(
+                    (total, item) => total + item.so_tin_chi,
+                    0
+                  )}{" "}
+                  tín chỉ
                 </p>
               </div>
             </div>
@@ -316,7 +333,7 @@ export function SchedulesClientPage() {
             <div className="space-y-6">
               {daysOfWeek.map((day) => {
                 const daySchedules = scheduleByDay[day.value] || [];
-                
+
                 return (
                   <div key={day.value} className="space-y-4">
                     <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -327,7 +344,7 @@ export function SchedulesClientPage() {
                         </span>
                       )}
                     </h3>
-                    
+
                     {daySchedules.length > 0 ? (
                       <Table>
                         <TableHeader>
@@ -346,14 +363,20 @@ export function SchedulesClientPage() {
                             .map((item, index) => (
                               <TableRow key={index}>
                                 <TableCell className="font-medium">
-                                  Tiết {item.tiet_bat_dau} - {item.tiet_ket_thuc}
+                                  Tiết {item.tiet_bat_dau} -{" "}
+                                  {item.tiet_ket_thuc}
                                 </TableCell>
                                 <TableCell>
-                                  {getTimeSlot(item.tiet_bat_dau, item.tiet_ket_thuc)}
+                                  {getTimeSlot(
+                                    item.tiet_bat_dau,
+                                    item.tiet_ket_thuc
+                                  )}
                                 </TableCell>
                                 <TableCell>
                                   <div>
-                                    <div className="font-medium">{item.ten_mh}</div>
+                                    <div className="font-medium">
+                                      {item.ten_mh}
+                                    </div>
                                     <div className="text-sm text-muted-foreground">
                                       {item.ma_lop_hp}
                                     </div>
@@ -361,7 +384,9 @@ export function SchedulesClientPage() {
                                 </TableCell>
                                 <TableCell>{item.ho_ten_gv}</TableCell>
                                 <TableCell>
-                                  <Badge variant="secondary">{item.ten_phong}</Badge>
+                                  <Badge variant="secondary">
+                                    {item.ten_phong}
+                                  </Badge>
                                 </TableCell>
                                 <TableCell>{item.so_tin_chi}</TableCell>
                               </TableRow>

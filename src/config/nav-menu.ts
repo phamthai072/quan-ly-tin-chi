@@ -78,7 +78,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: BarChart3,
   },
   {
-    title: "Xem lịch học - No",
+    title: "Xem lịch học",
     href: "/schedules",
     icon: CalendarClock,
   },
