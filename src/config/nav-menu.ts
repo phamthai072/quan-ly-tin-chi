@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  BellRing,
   BookCopy,
   BookUser,
   CalendarClock,
@@ -77,7 +78,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: BarChart3,
   },
   {
-    title: "Xem lịch học",
+    title: "Xem lịch học - No",
     href: "/schedules",
     icon: CalendarClock,
   },
@@ -110,7 +111,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: Users,
   },
   {
-    title: "Thống kê điểm",
+    title: "Thống kê điểm - No",
     href: "/results",
     icon: FileText,
   },
@@ -123,5 +124,10 @@ export const navMenuItems: NavMenuItem[] = [
     title: "Đăng ký tín chỉ",
     href: "/course-registration",
     icon: BookCopy,
+  },
+  {
+    title: "Cảnh báo SV",
+    href: "/students-alert",
+    icon: BellRing,
   },
 ];
