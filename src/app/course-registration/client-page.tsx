@@ -413,6 +413,7 @@ export function CourseRegistrationClientPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Mã lớp</TableHead>
+                    <TableHead>Mã môn học</TableHead>
                     <TableHead>Tên môn học</TableHead>
                     <TableHead>Số TC</TableHead>
                     <TableHead>Giảng viên</TableHead>
@@ -435,6 +436,7 @@ export function CourseRegistrationClientPage() {
                         <TableCell className="font-medium">
                           {course.ma_lop_hp}
                         </TableCell>
+                        <TableCell>{course.ma_mh}</TableCell>
                         <TableCell>{course.ten_mh}</TableCell>
                         <TableCell>{course.so_tin_chi}</TableCell>
                         <TableCell>{course.ho_ten_gv}</TableCell>

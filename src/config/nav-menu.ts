@@ -111,7 +111,7 @@ export const navMenuItems: NavMenuItem[] = [
     icon: Users,
   },
   {
-    title: "Thống kê điểm - No",
+    title: "Thống kê điểm",
     href: "/results",
     icon: FileText,
   },

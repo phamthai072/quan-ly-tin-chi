@@ -624,7 +624,7 @@ export function ResultsClientPage({
                     <TableHead>Lớp HP</TableHead>
                     <TableHead>Học kỳ</TableHead>
                     {/* <TableHead className="text-center">ĐTB HK</TableHead> */}
-                    <TableHead className="text-center">ĐTB tích lũy</TableHead>
+                    <TableHead className="text-center">GPA</TableHead>
                     <TableHead className="text-center">Tổng môn</TableHead>
                     <TableHead className="text-center">TC nợ</TableHead>
                     {/* <TableHead>
