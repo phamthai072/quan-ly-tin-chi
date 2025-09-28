@@ -1,42 +1,5 @@
 "use client";
 
-import * as React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import {
-  Calendar as CalendarIcon,
-  MoreHorizontal,
-  PlusCircle,
-  Search,
-} from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { type Semester } from "@/lib/mock-data";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,18 +9,53 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn, formatDate, formatDateForSQL } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useApi } from "@/hooks/use-api";
 import { toast } from "@/hooks/use-toast";
 import { useRenderCount } from "@/hooks/useRenderCount";
+import { type Semester } from "@/lib/mock-data";
+import { cn, formatDate, formatDateForSQL } from "@/lib/utils";
+import {
+  Calendar as CalendarIcon,
+  MoreHorizontal,
+  PlusCircle,
+  Search,
+} from "lucide-react";
+import * as React from "react";
 
 export function SemestersClientPage({
   semesters: initialSemesters,
@@ -485,13 +483,11 @@ export function SemestersClientPage({
                   </Label>
                   <Input
                     id="semester-year"
-                    type="number"
-                    min={2000}
-                    max={2100}
+                    // type="number"
                     value={newSemesterSchoolYear}
                     onChange={(e) => setNewSemesterSchoolYear(e.target.value)}
                     className="col-span-3"
-                    placeholder="VD: 2024, 2025"
+                    placeholder="VD: 2024 - 2025"
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
