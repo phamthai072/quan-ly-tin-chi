@@ -42,20 +42,19 @@ export function StudentsAlertClientPage() {
         whereClause = `AND (sv.ma_sv LIKE N'%${searchQuery}%' OR sv.ho_ten_sv LIKE N'%${searchQuery}%')`;
       }
 
-      const query = `
-        SELECT 
-          sv.ma_sv,
-          sv.ho_ten_sv,
-          -- Điểm trung bình tích lũy
-          CAST((
-            SELECT SUM(kq.diem * mh.so_tin_chi * 1.0) / NULLIF(SUM(mh.so_tin_chi), 0)
-            FROM ket_qua kq
-            INNER JOIN lop_hoc_phan lhp ON kq.ma_lop_hp = lhp.ma_lop_hp
-            INNER JOIN mon_hoc mh ON lhp.ma_mh = mh.ma_mh
-            WHERE kq.ma_sv = sv.ma_sv AND kq.diem >= 4.0
-          ) AS DECIMAL(5,2)) AS diem_tb_tich_luy,
-          -- Tổng tín chỉ trượt
-          ISNULL((
+            const query = ` SELECT
+	sv.ma_sv,
+	sv.ho_ten_sv,
+	-- Điểm trung bình tích lũy
+	ISNULL( CAST((
+    SELECT SUM(kq.diem * mh.so_tin_chi * 1.0) / NULLIF(SUM(mh.so_tin_chi), 0)
+    FROM ket_qua kq
+    INNER JOIN lop_hoc_phan lhp ON kq.ma_lop_hp = lhp.ma_lop_hp
+    INNER JOIN mon_hoc mh ON lhp.ma_mh = mh.ma_mh
+    WHERE kq.ma_sv = sv.ma_sv
+) AS DECIMAL(5, 2)), 0) AS diem_tb_tich_luy,
+	-- Tổng tín chỉ trượt
+	ISNULL((
             SELECT SUM(mh2.so_tin_chi)
             FROM mon_hoc mh2
             WHERE mh2.ma_chuyen_nganh = sv.ma_chuyen_nganh
@@ -68,10 +67,12 @@ export function StudentsAlertClientPage() {
                   AND kq2.diem >= 4.0
               )
           ), 0) AS tong_tc_truot
-        FROM sinh_vien sv
-        WHERE 1=1 ${whereClause}
-        ORDER BY sv.ho_ten_sv ASC
-      `;
+FROM
+	sinh_vien sv
+WHERE
+	1 = 1 ${whereClause}
+  ORDER BY sv.ho_ten_sv ASC
+`;
 
       const result = await apiCall({
         endpoint: "/api/query",
